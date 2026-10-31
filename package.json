@@ -1,0 +1,37 @@
+{
+  "name": "camps-monorepo",
+  "version": "1.0.0",
+  "description": "Centralized Academic Monitoring and Prediction System Using Machine Learning - VTU PESITM CSE Capstone",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:ml": "py ml-service/run.py",
+    "dev": "concurrently -n \"FRONTEND,BACKEND,ML-SERVICE\" -c \"cyan,magenta,yellow\" \"npm run dev:frontend\" \"npm run dev:backend\" \"npm run dev:ml\"",
+    "build:frontend": "npm --prefix frontend run build",
+    "test:frontend": "npm --prefix frontend test -- --run",
+    "test:backend": "npm --prefix backend test",
+    "test:ml": "py -m pytest ml-service/tests",
+    "test": "npm run test:frontend && npm run test:backend && npm run test:ml",
+    "install:all": "npm install && npm --prefix frontend install && npm --prefix backend install"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "keywords": [
+    "academic-monitoring",
+    "xgboost",
+    "shap",
+    "vtu-project",
+    "pesitm-shivamogga",
+    "react",
+    "express",
+    "flask"
+  ],
+  "author": "PESITM Shivamogga - Final Year CSE",
+  "license": "MIT"
+}
