@@ -137,8 +137,8 @@
                             <span class="text-muted">N/A</span>
                         {% endif %}
                     </td>
-                    <td>{{ e.internal_assessment.ia1_marks if e.internal_assessment and e.internal_assessment.ia1_marks is not None else '-' }}</td>
-                    <td>{{ e.internal_assessment.ia2_marks if e.internal_assessment and e.internal_assessment.ia2_marks is not None else '-' }}</td>
+                    <td>{{ e.internal_assessment.ia1_marks if e.internal_assessment and e.internal_assessment.ia1_marks is not none else '-' }}</td>
+                    <td>{{ e.internal_assessment.ia2_marks if e.internal_assessment and e.internal_assessment.ia2_marks is not none else '-' }}</td>
                     <td>{{ e.internal_assessment.assignment_marks if e.internal_assessment else '-' }}</td>
                     <td class="fw-bold text-primary">{{ e.internal_assessment.total_cie if e.internal_assessment else '-' }}</td>
                 </tr>

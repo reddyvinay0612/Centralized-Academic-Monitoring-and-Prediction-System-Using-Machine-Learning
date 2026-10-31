@@ -17,10 +17,10 @@
 
                 <form method="POST" action="{{ url_for('auth.login') }}">
                     <div class="mb-3">
-                        <label for="email" class="form-label small fw-semibold">Institutional Email Address</label>
+                        <label for="email" class="form-label small fw-semibold">Email Address, USN, or Student Name</label>
                         <div class="input-group">
-                            <span class="input-group-text bg-light"><i class="bi bi-envelope"></i></span>
-                            <input type="email" class="form-control" id="email" name="email" placeholder="name@camps.edu" required autofocus>
+                            <span class="input-group-text bg-light"><i class="bi bi-person-badge"></i></span>
+                            <input type="text" class="form-control" id="email" name="email" placeholder="e.g. Poorvi V S, 1RV21CD000, or admin@camps.edu" required autofocus>
                         </div>
                     </div>
 
@@ -30,6 +30,7 @@
                             <span class="input-group-text bg-light"><i class="bi bi-shield-lock"></i></span>
                             <input type="password" class="form-control" id="password" name="password" placeholder="••••••••" required>
                         </div>
+                        <div class="form-text text-muted" style="font-size: 0.75rem;">Default student password is <code>Student@123</code></div>
                     </div>
 
                     <div class="mb-4 form-check">
@@ -44,13 +45,13 @@
 
                 <!-- Demo One-Click Fill for Viva Defense -->
                 <div class="mt-4 pt-3 border-top text-center">
-                    <div class="small fw-bold text-muted mb-2">Viva Demo 1-Click Autofill:</div>
+                    <div class="small fw-bold text-muted mb-2">1-Click Demo Accounts:</div>
                     <div class="d-flex flex-wrap gap-1 justify-content-center">
+                        <button type="button" class="btn btn-sm btn-primary" onclick="fillDemo('Poorvi V S', 'Student@123')">Poorvi V S (Student)</button>
                         <button type="button" class="btn btn-sm btn-outline-secondary" onclick="fillDemo('admin@camps.edu', 'Admin@123')">Admin</button>
                         <button type="button" class="btn btn-sm btn-outline-secondary" onclick="fillDemo('hod.csd@camps.edu', 'Hod@123')">HoD</button>
                         <button type="button" class="btn btn-sm btn-outline-secondary" onclick="fillDemo('prof.anita@camps.edu', 'Faculty@123')">Faculty</button>
-                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="fillDemo('student.1rv21cd001@camps.edu', 'Student@123')">Student (High Risk)</button>
-                        <button type="button" class="btn btn-sm btn-outline-success" onclick="fillDemo('student.1rv21cd010@camps.edu', 'Student@123')">Student (Low Risk)</button>
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="fillDemo('student.1rv21cd001@camps.edu', 'Student@123')">High Risk Student</button>
                     </div>
                 </div>
             </div>

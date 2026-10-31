@@ -49,11 +49,50 @@ def login():
             return redirect(url_for("student.dashboard"))
 
     if request.method == "POST":
-        email = request.form.get("email", "").strip().lower()
+        identifier = request.form.get("email", "").strip()
         password = request.form.get("password", "")
         remember = bool(request.form.get("remember"))
 
-        user = User.query.filter_by(email=email).first()
+        user = None
+        if identifier:
+            # 1. Search by exact email (case-insensitive)
+            user = User.query.filter(User.email.ilike(identifier)).first()
+
+            # 2. Search by USN if student
+            if not user:
+                from app.models import StudentProfile, FacultyProfile
+                student_by_usn = StudentProfile.query.filter(StudentProfile.usn.ilike(identifier)).first()
+                if student_by_usn:
+                    user = student_by_usn.user
+
+            # 3. Search by Student First Name / Full Name
+            if not user:
+                from app.models import StudentProfile
+                for s in StudentProfile.query.all():
+                    full_name = f"{s.first_name} {s.last_name}".strip().lower()
+                    id_lower = identifier.lower().replace(".", " ").strip()
+                    fn_lower = s.first_name.strip().lower()
+                    # Check partial or exact match
+                    if id_lower in full_name or full_name in id_lower or id_lower == fn_lower:
+                        user = s.user
+                        break
+
+            # 4. Search by Faculty First Name / Full Name
+            if not user:
+                from app.models import FacultyProfile
+                for f in FacultyProfile.query.all():
+                    full_name = f"{f.first_name} {f.last_name}".strip().lower()
+                    id_lower = identifier.lower().strip()
+                    if id_lower in full_name or full_name in id_lower:
+                        user = f.user
+                        break
+
+            # 5. Search by Role shorthand
+            if not user:
+                if identifier.lower() == "admin":
+                    user = User.query.filter_by(role=Role.ADMIN).first()
+                elif identifier.lower() in ("hod", "hod csd"):
+                    user = User.query.filter_by(role=Role.HOD).first()
 
         if user and user.check_password(password):
             if not user.is_active:
