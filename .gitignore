@@ -1,0 +1,69 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+
+# Environment Variables
+.env
+.env.local
+
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+instance/
+
+# Machine Learning Large Artifacts & Checkpoints
+# Note: Final production models committed under ml_engine/saved_models if desired,
+# but temporary checkpoints and large caches are ignored.
+*.checkpoint
+*.h5
+
+# Jupyter Notebook Checkpoints
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+
+# IDE & OS Files
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Test & Coverage artifacts
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Application generated temporary output
+reports_output/*.pdf
+reports_output/*.xlsx
+!reports_output/.gitkeep
