@@ -40,6 +40,9 @@ def create_app(config_name=None):
     login_manager.login_message = "Please sign in to access this page."
     login_manager.login_message_category = "warning"
 
+    # Register models with metadata
+    from . import models
+
     # Base Health Check Route (Verifies environment and app status)
     @app.route("/health")
     def health_check():
