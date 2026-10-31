@@ -1,0 +1,25 @@
+CAMPS-ML EXPLORATORY DATA ANALYSIS SUMMARY
+============================================================
+
+Total Rows: 1500
+Features: ['USN', 'First_Name', 'Last_Name', 'Department', 'Gender', 'Category', '10th_Percentage', '12th_Percentage', 'Entrance_Rank', 'Attendance_Percentage', 'CIE_IA1', 'CIE_IA2', 'CIE_IA3', 'Assignment_Score', 'Lab_Score', 'Total_CIE', 'Sem1_SGPA', 'Sem2_SGPA', 'Sem3_SGPA', 'Sem4_SGPA', 'Cumulative_CGPA', 'Active_Backlogs', 'Fee_Due_Amount', 'Fee_Status', 'Scholarship', 'Target_Risk', 'Target_Next_SGPA']
+
+TARGET DISTRIBUTION:
+Target_Risk
+Low       706
+Medium    452
+High      342
+Name: count, dtype: int64
+
+NUMERICAL FEATURES DESCRIPTIVE STATISTICS:
+       Attendance_Percentage  CIE_IA1  ...  12th_Percentage  Target_Next_SGPA
+count                1500.00  1500.00  ...          1500.00           1500.00
+mean                   77.70    17.94  ...            73.98              6.89
+std                    12.10     5.38  ...             9.98              1.95
+min                    38.30     4.00  ...            50.00              3.50
+25%                    69.60    14.30  ...            67.20              5.52
+50%                    77.95    17.90  ...            73.65              7.03
+75%                    86.60    21.80  ...            80.72              8.40
+max                    99.00    30.00  ...            98.00             10.00
+
+[8 rows x 10 columns]

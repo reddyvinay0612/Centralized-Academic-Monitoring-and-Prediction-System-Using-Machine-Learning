@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}Student Diagnostic - {{ student.usn }}{% endblock %}
+{% block page_title %}Academic & Predictive Diagnostics: {{ student.first_name }} {{ student.last_name }} ({{ student.usn }}){% endblock %}
+
+{% block content %}
+<!-- Student Header Card -->
+<div class="card stat-card p-4 mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div>
+            <h4 class="fw-bold mb-1">{{ student.first_name }} {{ student.last_name }} <span class="badge bg-secondary font-monospace">{{ student.usn }}</span></h4>
+            <div class="text-muted small">
+                {{ student.department.name }} &bull; Semester {{ student.current_semester }} (Sec {{ student.section }}) &bull; Batch {{ student.batch_year }}
+            </div>
+            <div class="text-muted small mt-1">
+                Parent Contact: <b>{{ student.parent_phone }}</b> | Fee Status: <b class="{% if student.fee_status != 'Cleared' %}text-danger{% else %}text-success{% endif %}">{{ student.fee_status }} (₹{{ student.fee_due_amount|round(0) }} due)</b>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('faculty.rescore_student', student_id=student.id) }}" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-clockwise me-1"></i> Rescore ML Model
+            </a>
+            <a href="{{ url_for('faculty.download_pdf', student_id=student.id) }}" class="btn btn-outline-danger">
+                <i class="bi bi-file-earmark-pdf me-1"></i> Download PDF Transcript
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <!-- Machine Learning & XAI Diagnosis Card -->
+    <div class="col-lg-6">
+        <div class="card stat-card p-4 h-100 border-start border-4 {% if student.current_risk_level == 'High' %}border-danger{% elif student.current_risk_level == 'Medium' %}border-warning{% else %}border-success{% endif %}">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold mb-0"><i class="bi bi-cpu-fill text-primary me-2"></i>ML Predictive Assessment & TreeSHAP</h6>
+                {% if student.current_risk_level == 'High' %}
+                    <span class="badge badge-risk-high fs-6">HIGH RISK</span>
+                {% elif student.current_risk_level == 'Medium' %}
+                    <span class="badge badge-risk-medium fs-6">MEDIUM RISK</span>
+                {% else %}
+                    <span class="badge badge-risk-low fs-6">LOW RISK (SAFE)</span>
+                {% endif %}
+            </div>
+
+            {% if latest_pred %}
+            <div class="row g-2 mb-3">
+                <div class="col-6">
+                    <div class="p-2 border rounded bg-light text-center">
+                        <div class="small text-muted">Dropout / Failure Probability</div>
+                        <div class="fw-bold fs-5 {% if latest_pred.risk_probability > 0.6 %}text-danger{% else %}text-success{% endif %}">
+                            {{ (latest_pred.risk_probability * 100)|round(1) }}%
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="p-2 border rounded bg-light text-center">
+                        <div class="small text-muted">Projected Next-Sem SGPA</div>
+                        <div class="fw-bold fs-5 text-primary">
+                            {{ latest_pred.predicted_sgpa or 'N/A' }} / 10.0
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h6 class="fw-bold small text-muted text-uppercase mb-2">Why was this student flagged? (TreeSHAP Attributions)</h6>
+            <div class="list-group list-group-flush mb-3">
+                {% for factor in latest_pred.shap_factors %}
+                <div class="list-group-item px-0 py-2 border-0">
+                    <div class="d-flex justify-content-between align-items-center small">
+                        <span class="fw-bold">{{ factor.feature_name }}: <span class="text-muted fw-normal">{{ factor.feature_value }}</span></span>
+                        <span class="badge {% if factor.impact_direction == 'Increases Risk' %}bg-danger{% else %}bg-success{% endif %}">
+                            {{ factor.impact_direction }}: {{ factor.shap_value|round(3) }}
+                        </span>
+                    </div>
+                    <div class="shap-bar-container">
+                        <div class="{% if factor.impact_direction == 'Increases Risk' %}shap-bar-positive{% else %}shap-bar-negative{% endif %}"
+                             style="width: {{ (factor.shap_value|abs * 40)|round(0) }}%;"></div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="text-muted small">No individual SHAP factors logged. Click "Rescore ML Model" above.</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Log Counseling Remark Form -->
+    <div class="col-lg-6">
+        <div class="card stat-card p-4 h-100">
+            <h6 class="fw-bold mb-3"><i class="bi bi-chat-left-text-fill text-success me-2"></i>Log Mentor Counselling & Action Plan</h6>
+            <form method="POST" action="{{ url_for('faculty.add_mentor_remark', student_id=student.id) }}">
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold">Concern Category</label>
+                    <select name="concern_category" class="form-select form-select-sm" required>
+                        <option value="Attendance Shortage">Attendance Shortage (&lt;75%)</option>
+                        <option value="CIE IA Score Dip">CIE Internal Assessment Score Dip</option>
+                        <option value="Active Arrears / Backlogs">Active Arrears / Backlogs Coaching</option>
+                        <option value="Fee Due & Personal">Fee Due / Administrative Assistance</option>
+                        <option value="Career & Academic Motivation">Career & Academic Motivation Counseling</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold">Counselor Notes / Observation</label>
+                    <textarea name="remark_text" class="form-control form-control-sm" rows="2" placeholder="Student explained transportation delays during IA2; missing ML labs..." required></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold">Prescribed Remedial Action Plan</label>
+                    <textarea name="action_plan" class="form-control form-control-sm" rows="2" placeholder="Assigned 2 Saturday compensatory lab clinics; peer study partner appointed." required></textarea>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <label class="form-label small fw-semibold mb-0 me-2">Follow-up in:</label>
+                        <select name="follow_up_days" class="form-select form-select-sm d-inline-block w-auto">
+                            <option value="7">7 Days</option>
+                            <option value="14" selected>14 Days</option>
+                            <option value="30">30 Days</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-success btn-sm px-3 fw-bold">
+                        <i class="bi bi-check2-circle me-1"></i> Save Intervention
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Current Semester Course & Attendance Breakdown -->
+<div class="card stat-card p-4 mb-4">
+    <h6 class="fw-bold mb-3"><i class="bi bi-table text-primary me-2"></i>Semester {{ student.current_semester }} Course Registrations & Continuous Evaluation</h6>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Course Code</th>
+                    <th>Course Name</th>
+                    <th>Credits</th>
+                    <th>Attendance %</th>
+                    <th>IA1 (30)</th>
+                    <th>IA2 (30)</th>
+                    <th>Assignment (10)</th>
+                    <th>Lab (10)</th>
+                    <th>Total CIE (50)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for e in enrollments %}
+                <tr>
+                    <td class="fw-bold">{{ e.course.code }}</td>
+                    <td>{{ e.course.name }}</td>
+                    <td>{{ e.course.credits }}</td>
+                    <td>
+                        {% if e.attendance %}
+                            <span class="badge {% if e.attendance.is_shortage %}bg-danger{% else %}bg-success-subtle text-success{% endif %}">
+                                {{ e.attendance.percentage }}%
+                            </span>
+                        {% else %}
+                            <span class="text-muted">N/A</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ e.internal_assessment.ia1_marks if e.internal_assessment and e.internal_assessment.ia1_marks is not None else '-' }}</td>
+                    <td>{{ e.internal_assessment.ia2_marks if e.internal_assessment and e.internal_assessment.ia2_marks is not None else '-' }}</td>
+                    <td>{{ e.internal_assessment.assignment_marks if e.internal_assessment else '-' }}</td>
+                    <td>{{ e.internal_assessment.lab_marks if e.internal_assessment and e.course.is_laboratory else 'N/A' }}</td>
+                    <td class="fw-bold text-primary">{{ e.internal_assessment.total_cie if e.internal_assessment else '-' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Past Counseling Timeline -->
+<div class="card stat-card p-4">
+    <h6 class="fw-bold mb-3"><i class="bi bi-journal-text text-secondary me-2"></i>Counseling Intervention Timeline ({{ remarks|length }})</h6>
+    <div class="list-group list-group-flush">
+        {% for r in remarks %}
+        <div class="list-group-item px-0 py-3">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="fw-bold text-primary">{{ r.concern_category }}</span>
+                <span class="badge bg-secondary">{{ r.status }}</span>
+            </div>
+            <div class="text-dark small mb-1">{{ r.remark_text }}</div>
+            <div class="p-2 bg-light rounded small border">
+                <b>Action Plan:</b> {{ r.action_plan }}
+            </div>
+            <div class="text-muted mt-1" style="font-size: 0.75rem;">
+                Logged by Prof. {{ r.faculty.last_name }} on {{ r.created_at.strftime('%d-%b-%Y') }} | Next Review: {{ r.follow_up_date.strftime('%d-%b-%Y') if r.follow_up_date else 'N/A' }}
+            </div>
+        </div>
+        {% else %}
+        <div class="text-center text-muted py-3 small">No counseling remarks logged yet.</div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

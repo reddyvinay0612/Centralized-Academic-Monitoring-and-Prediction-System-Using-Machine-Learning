@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: camps-academic-monitoring-ml
+    env: python
+    buildCommand: "pip install -r requirements.txt gunicorn && python seed_db.py"
+    startCommand: "gunicorn --workers 3 --timeout 120 wsgi:app"
+    plan: free
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        value: sqlite:///instance/camps.db

@@ -41,8 +41,8 @@ env/
 instance/
 
 # Machine Learning Large Artifacts & Checkpoints
-# Note: Final production models committed under ml_engine/saved_models if desired,
-# but temporary checkpoints and large caches are ignored.
+*.zip
+data/raw/uci_extracted/
 *.checkpoint
 *.h5
 

@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}My Academic Dashboard{% endblock %}
+{% block page_title %}Welcome, {{ student.first_name }} {{ student.last_name }} ({{ student.usn }}){% endblock %}
+
+{% block content %}
+<!-- Student Overview Tiles -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card p-3">
+            <div class="card-label">Cumulative CGPA</div>
+            <div class="card-value text-primary">{{ student.cumulative_cgpa }}</div>
+            <div class="small text-muted">Out of 10.0 scale</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card p-3">
+            <div class="card-label">Overall Attendance</div>
+            <div class="card-value {% if avg_att < 75 %}text-danger{% else %}text-success{% endif %}">{{ avg_att }}%</div>
+            <div class="small text-muted">Mandatory AICTE Min: 75%</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card p-3">
+            <div class="card-label">Active Backlogs</div>
+            <div class="card-value {% if student.total_active_backlogs > 0 %}text-danger{% else %}text-success{% endif %}">
+                {{ student.total_active_backlogs }}
+            </div>
+            <div class="small text-muted">Arrears across semesters</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card p-3">
+            <div class="card-label">Forecasted Next SGPA</div>
+            <div class="card-value text-info">{{ pred_data.predicted_sgpa }}</div>
+            <div class="small text-muted">ML Projected Target</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <!-- SGPA Trajectory Chart -->
+    <div class="col-lg-7">
+        <div class="card stat-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold mb-0"><i class="bi bi-graph-up text-primary me-2"></i>SGPA Academic Trajectory & Forecast</h6>
+                <a href="{{ url_for('student.download_transcript') }}" class="btn btn-sm btn-outline-danger">
+                    <i class="bi bi-file-earmark-pdf me-1"></i> Download PDF
+                </a>
+            </div>
+            <div style="height: 250px;">
+                <canvas id="studentSgpaChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Academic Health & XAI Breakdown -->
+    <div class="col-lg-5">
+        <div class="card stat-card p-4 h-100 border-start border-4 {% if student.current_risk_level == 'High' %}border-danger{% elif student.current_risk_level == 'Medium' %}border-warning{% else %}border-success{% endif %}">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="fw-bold mb-0"><i class="bi bi-robot text-primary me-2"></i>AI Risk Evaluation</h6>
+                {% if student.current_risk_level == 'High' %}
+                    <span class="badge badge-risk-high">HIGH RISK</span>
+                {% elif student.current_risk_level == 'Medium' %}
+                    <span class="badge badge-risk-medium">MEDIUM RISK</span>
+                {% else %}
+                    <span class="badge badge-risk-low">LOW RISK (GOOD)</span>
+                {% endif %}
+            </div>
+
+            <p class="small text-muted mb-3">
+                XGBoost Early Warning Prediction based on attendance, CIE test trends, and academic history.
+            </p>
+
+            <h6 class="fw-bold small text-muted text-uppercase mb-2">What is influencing your risk tier? (TreeSHAP)</h6>
+            <div class="list-group list-group-flush mb-3">
+                {% for factor in pred_data.shap_factors %}
+                <div class="list-group-item px-0 py-1 border-0">
+                    <div class="d-flex justify-content-between align-items-center small">
+                        <span>{{ factor.feature_name }}</span>
+                        <span class="badge {% if factor.impact_direction == 'Increases Risk' %}bg-danger{% else %}bg-success{% endif %}">
+                            {{ factor.impact_direction }}
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Personalized AI Recommendations -->
+            <div class="p-3 bg-light rounded border">
+                <div class="fw-bold small text-primary mb-1"><i class="bi bi-lightbulb-fill text-warning me-1"></i>Personal Improvement Suggestions:</div>
+                <ul class="mb-0 ps-3 small text-muted">
+                    {% for rec in recommendations %}
+                    <li>{{ rec }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Enrolled Courses & Attendance Status -->
+<div class="card stat-card p-4 mb-4">
+    <h6 class="fw-bold mb-3"><i class="bi bi-journal-check text-primary me-2"></i>Current Semester Enrolled Subjects</h6>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Course Code</th>
+                    <th>Course Title</th>
+                    <th>Credits</th>
+                    <th>Attendance %</th>
+                    <th>IA1 (30)</th>
+                    <th>IA2 (30)</th>
+                    <th>Assignment</th>
+                    <th>Total CIE (50)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for e in enrollments %}
+                <tr>
+                    <td class="fw-bold">{{ e.course.code }}</td>
+                    <td>{{ e.course.name }}</td>
+                    <td>{{ e.course.credits }}</td>
+                    <td>
+                        {% if e.attendance %}
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="fw-bold {% if e.attendance.is_shortage %}text-danger{% else %}text-success{% endif %}">
+                                {{ e.attendance.percentage }}%
+                            </span>
+                            <div class="progress flex-grow-1" style="height: 6px;">
+                                <div class="progress-bar {% if e.attendance.is_shortage %}bg-danger{% else %}bg-success{% endif %}"
+                                     style="width: {{ e.attendance.percentage }}%;"></div>
+                            </div>
+                        </div>
+                        {% else %}
+                            <span class="text-muted">N/A</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ e.internal_assessment.ia1_marks if e.internal_assessment and e.internal_assessment.ia1_marks is not None else '-' }}</td>
+                    <td>{{ e.internal_assessment.ia2_marks if e.internal_assessment and e.internal_assessment.ia2_marks is not None else '-' }}</td>
+                    <td>{{ e.internal_assessment.assignment_marks if e.internal_assessment else '-' }}</td>
+                    <td class="fw-bold text-primary">{{ e.internal_assessment.total_cie if e.internal_assessment else '-' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const ctx = document.getElementById("studentSgpaChart").getContext("2d");
+    
+    // Historical SGPAs
+    const semLabels = [{% for r in semester_results %}"Sem {{ r.semester }}",{% endfor %} "Sem 5 (Pred)"];
+    const sgpaData = [{% for r in semester_results %}{{ r.sgpa }},{% endfor %} {{ pred_data.predicted_sgpa }}];
+
+    new Chart(ctx, {
+        type: "line",
+        data: {
+            labels: semLabels,
+            datasets: [{
+                label: "Semester SGPA",
+                data: sgpaData,
+                borderColor: "#0d6efd",
+                backgroundColor: "rgba(13, 110, 253, 0.1)",
+                fill: true,
+                tension: 0.3,
+                pointRadius: 6,
+                pointBackgroundColor: ["#0d6efd", "#0d6efd", "#0d6efd", "#0d6efd", "#ffc107"]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { min: 3.0, max: 10.0 }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

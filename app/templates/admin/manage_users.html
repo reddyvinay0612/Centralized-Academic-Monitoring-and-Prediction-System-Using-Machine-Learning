@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Users{% endblock %}
+{% block page_title %}User Account Management & Roles{% endblock %}
+
+{% block content %}
+<div class="card stat-card p-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="fw-bold mb-0">Registered Institutional Accounts ({{ users|length }})</h6>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('admin.manage_users') }}" class="btn btn-sm btn-outline-secondary">All Roles</a>
+            <a href="{{ url_for('admin.manage_users', role='faculty') }}" class="btn btn-sm btn-outline-primary">Faculty Only</a>
+            <a href="{{ url_for('admin.manage_users', role='student') }}" class="btn btn-sm btn-outline-success">Students Only</a>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>User ID</th>
+                    <th>Name</th>
+                    <th>Email Address</th>
+                    <th>Role</th>
+                    <th>Affiliation / USN</th>
+                    <th>Status</th>
+                    <th>Joined</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr>
+                    <td>#{{ u.id }}</td>
+                    <td class="fw-bold">{{ u.full_name }}</td>
+                    <td>{{ u.email }}</td>
+                    <td>
+                        <span class="badge bg-secondary text-uppercase">{{ u.role }}</span>
+                    </td>
+                    <td>
+                        {% if u.student_profile %}
+                            <span class="badge bg-light text-dark border">{{ u.student_profile.usn }}</span>
+                        {% elif u.faculty_profile %}
+                            <span class="badge bg-light text-dark border">{{ u.faculty_profile.employee_id }}</span>
+                        {% else %}
+                            <span class="text-muted">System Admin</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if u.is_active %}
+                            <span class="badge bg-success">Active</span>
+                        {% else %}
+                            <span class="badge bg-danger">Disabled</span>
+                        {% endif %}
+                    </td>
+                    <td class="small text-muted">{{ u.created_at.strftime('%d-%b-%Y') }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

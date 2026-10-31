@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  camps_web:
+    build: .
+    container_name: camps_ml_app
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - SECRET_KEY=camps-ml-production-deploy-key-change-in-env-32chars
+      - DATABASE_URL=sqlite:///instance/camps.db
+      - ALERT_ATTENDANCE_THRESHOLD=75.0
+      - ALERT_HIGH_RISK_PROBABILITY=0.60
+    volumes:
+      - ./instance:/app/instance
+      - ./reports_output:/app/reports_output
+      - ./data/raw:/app/data/raw

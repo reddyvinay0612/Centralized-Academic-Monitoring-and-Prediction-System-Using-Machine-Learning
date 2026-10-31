@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Mentorship Portal{% endblock %}
+{% block page_title %}Faculty Mentorship & Student Progress Tracker{% endblock %}
+
+{% block content %}
+<div class="row g-3 mb-4">
+    <div class="col-sm-4">
+        <div class="card stat-card p-3">
+            <div class="card-label">Assigned Mentees</div>
+            <div class="card-value text-primary">{{ total_mentees }}</div>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="card stat-card p-3">
+            <div class="card-label">At-Risk Mentees</div>
+            <div class="card-value text-danger">{{ high_risk_count }}</div>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="card stat-card p-3">
+            <div class="card-label">Attendance Shortage (&lt;75%)</div>
+            <div class="card-value text-warning">{{ shortage_count }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="card stat-card p-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="fw-bold mb-0"><i class="bi bi-people-fill text-primary me-2"></i>Mentee Cohort Monitoring Table</h6>
+        <div class="btn-group btn-group-sm">
+            <a href="{{ url_for('faculty.dashboard') }}" class="btn btn-outline-secondary">All Mentees</a>
+            <a href="{{ url_for('faculty.dashboard', risk='High') }}" class="btn btn-outline-danger">High Risk</a>
+            <a href="{{ url_for('faculty.dashboard', risk='Medium') }}" class="btn btn-outline-warning">Medium Risk</a>
+            <a href="{{ url_for('faculty.dashboard', risk='Low') }}" class="btn btn-outline-success">Good Standing</a>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>USN</th>
+                    <th>Mentee Name</th>
+                    <th>Sem / Sec</th>
+                    <th>Cumulative CGPA</th>
+                    <th>Backlogs</th>
+                    <th>Fee Status</th>
+                    <th>ML Risk Level</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in mentees %}
+                <tr>
+                    <td class="fw-bold">{{ m.usn }}</td>
+                    <td>{{ m.first_name }} {{ m.last_name }}</td>
+                    <td>Sem {{ m.current_semester }}-{{ m.section }}</td>
+                    <td>
+                        <span class="fw-bold {% if m.cumulative_cgpa < 6.0 %}text-danger{% elif m.cumulative_cgpa < 7.5 %}text-warning{% else %}text-success{% endif %}">
+                            {{ m.cumulative_cgpa }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if m.total_active_backlogs > 0 %}
+                            <span class="badge bg-danger">{{ m.total_active_backlogs }} backlogs</span>
+                        {% else %}
+                            <span class="badge bg-success-subtle text-success">0 arrears</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge {% if m.fee_status == 'Cleared' %}bg-success-subtle text-success{% else %}bg-warning-subtle text-warning{% endif %}">
+                            {{ m.fee_status }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if m.current_risk_level == 'High' %}
+                            <span class="badge badge-risk-high">HIGH RISK</span>
+                        {% elif m.current_risk_level == 'Medium' %}
+                            <span class="badge badge-risk-medium">MEDIUM RISK</span>
+                        {% else %}
+                            <span class="badge badge-risk-low">LOW RISK</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ url_for('faculty.student_detail', student_id=m.id) }}" class="btn btn-sm btn-primary py-1 px-3">
+                            <i class="bi bi-eye me-1"></i> Inspect
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="text-center text-muted py-3">No mentees found matching current filter.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

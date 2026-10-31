@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Dashboard{% endblock %} - CAMPS-ML</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="container-fluid p-0">
+        <div class="row g-0">
+            {% if current_user.is_authenticated %}
+            <!-- Sidebar -->
+            <div class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 sidebar d-flex flex-column justify-content-between">
+                <div class="d-flex flex-column px-3 pt-3">
+                    <a href="/" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-decoration-none">
+                        <i class="bi bi-mortarboard-fill fs-3 text-primary me-2"></i>
+                        <span class="brand-title">CAMPS-ML</span>
+                    </a>
+                    <div class="text-muted small mb-3 border-bottom pb-2">Academic Monitoring & XAI</div>
+
+                    <ul class="nav nav-pills flex-column mb-auto">
+                        {% if current_user.role == 'admin' %}
+                        <li class="nav-item">
+                            <a href="{{ url_for('admin.dashboard') }}" class="nav-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}">
+                                <i class="bi bi-speedometer2"></i> System Overview
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('admin.manage_users') }}" class="nav-link {% if request.endpoint == 'admin.manage_users' %}active{% endif %}">
+                                <i class="bi bi-people-fill"></i> User Accounts
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('admin.bulk_upload') }}" class="nav-link {% if request.endpoint == 'admin.bulk_upload' %}active{% endif %}">
+                                <i class="bi bi-cloud-arrow-up-fill"></i> Bulk Data Upload
+                            </a>
+                        </li>
+                        {% elif current_user.role == 'hod' %}
+                        <li class="nav-item">
+                            <a href="{{ url_for('hod.dashboard') }}" class="nav-link {% if request.endpoint == 'hod.dashboard' %}active{% endif %}">
+                                <i class="bi bi-bar-chart-line-fill"></i> Dept Analytics
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('hod.export_excel') }}" class="nav-link">
+                                <i class="bi bi-file-earmark-excel-fill text-success"></i> Export Class Audit
+                            </a>
+                        </li>
+                        {% elif current_user.role == 'faculty' %}
+                        <li class="nav-item">
+                            <a href="{{ url_for('faculty.dashboard') }}" class="nav-link {% if request.endpoint == 'faculty.dashboard' %}active{% endif %}">
+                                <i class="bi bi-person-check-fill"></i> Mentees & Classes
+                            </a>
+                        </li>
+                        {% elif current_user.role == 'student' %}
+                        <li class="nav-item">
+                            <a href="{{ url_for('student.dashboard') }}" class="nav-link {% if request.endpoint == 'student.dashboard' %}active{% endif %}">
+                                <i class="bi bi-graph-up-arrow"></i> My Academic Status
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('student.download_transcript') }}" class="nav-link">
+                                <i class="bi bi-file-earmark-pdf-fill text-danger"></i> Download Transcript
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+
+                <!-- User profile badge at bottom of sidebar -->
+                <div class="px-3 py-3 border-top border-secondary">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="fw-bold text-white small">{{ current_user.full_name }}</div>
+                            <span class="badge bg-secondary text-uppercase" style="font-size: 0.65rem;">{{ current_user.role }}</span>
+                        </div>
+                        <a href="{{ url_for('auth.logout') }}" class="btn btn-sm btn-outline-light" title="Sign Out">
+                            <i class="bi bi-box-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Main Content Area -->
+            <div class="col {% if current_user.is_authenticated %}col-md-9 col-xl-10{% endif %} main-content">
+                <!-- Top Navbar -->
+                {% if current_user.is_authenticated %}
+                <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+                    <div>
+                        <h4 class="mb-0 fw-bold">{% block page_title %}Dashboard{% endblock %}</h4>
+                        <span class="text-muted small">Centralized Academic Monitoring & Early Warning Platform</span>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-3">
+                        <!-- Notification Bell Dropdown -->
+                        <div class="dropdown">
+                            <button class="btn btn-light position-relative rounded-circle shadow-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-bell-fill text-secondary"></i>
+                                <span id="notification-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none">
+                                    0
+                                </span>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-end shadow notification-menu p-0">
+                                <div class="p-2 border-bottom fw-bold small bg-light d-flex justify-content-between align-items-center">
+                                    <span>Early Warning Alerts</span>
+                                </div>
+                                <div id="notification-list-container">
+                                    <div class="text-center text-muted py-3 small">Loading alerts...</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- User Profile Link -->
+                        <div class="dropdown">
+                            <button class="btn btn-outline-primary dropdown-toggle rounded-pill px-3 shadow-sm" type="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-person-circle me-1"></i> {{ current_user.full_name }}
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow">
+                                <li class="px-3 py-1 small text-muted">Signed in as <b>{{ current_user.email }}</b></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}"><i class="bi bi-box-arrow-right me-2"></i>Sign Out</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Flash Message Toasts -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <!-- Main Page Body -->
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

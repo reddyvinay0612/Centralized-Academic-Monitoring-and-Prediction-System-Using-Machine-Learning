@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Bulk Data Upload{% endblock %}
+{% block page_title %}Batch Ingestion & Live ML Scoring{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card stat-card p-4 p-md-5">
+            <h5 class="fw-bold mb-3"><i class="bi bi-cloud-arrow-up-fill text-primary me-2"></i>Upload Student Dataset (CSV / Excel)</h5>
+            <p class="text-muted small">
+                Uploading a file will batch parse students, register enrollments for the selected semester, calculate continuous internal evaluation (CIE), and automatically run <b>XGBoost classification + TreeSHAP attributions</b> on every student.
+            </p>
+
+            <form method="POST" enctype="multipart/form-data">
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold small">Target Department</label>
+                        <select name="department_id" class="form-select" required>
+                            {% for dept in departments %}
+                            <option value="{{ dept.id }}">{{ dept.code }} - {{ dept.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold small">Current Semester</label>
+                        <select name="semester" class="form-select">
+                            <option value="5" selected>Semester 5 (Current Active Term)</option>
+                            <option value="6">Semester 6</option>
+                            <option value="7">Semester 7</option>
+                            <option value="8">Semester 8</option>
+                        </select>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-semibold small">Select CSV or Excel File</label>
+                        <input type="file" name="file" class="form-control" accept=".csv, .xlsx, .xls" required>
+                        <div class="form-text">Supported formats: <code>.csv</code>, <code>.xlsx</code> (Max file size: 16 MB).</div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <button type="submit" class="btn btn-primary px-4 py-2 fw-bold">
+                        <i class="bi bi-upload me-1"></i> Start Ingestion & Trigger ML
+                    </button>
+                    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary">Cancel</a>
+                </div>
+            </form>
+
+            <div class="mt-4 p-3 bg-light rounded border">
+                <div class="fw-bold small text-dark mb-1"><i class="bi bi-info-circle me-1 text-primary"></i>Expected Header Format:</div>
+                <div class="small text-muted font-monospace">
+                    USN, First_Name, Last_Name, Attendance_Percentage, IA1, IA2, IA3, CGPA, Backlogs, Fee_Status
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
