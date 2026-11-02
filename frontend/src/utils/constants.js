@@ -3,9 +3,12 @@
  */
 
 export const ROLES = {
+  PRINCIPAL: 'principal',
   ADMIN: 'admin',
   HOD: 'hod',
   FACULTY: 'faculty',
+  TEACHER: 'teacher',
+  PARENT: 'parent',
   STUDENT: 'student',
 };
 
@@ -18,6 +21,11 @@ export const ROUTES = {
   UPLOAD: '/upload',
   MY_PROGRESS: '/me',
   ADMIN: '/admin',
+  PRINCIPAL_DASHBOARD: '/principal/dashboard',
+  STUDENT_DASHBOARD: '/student/dashboard',
+  PARENT_DASHBOARD: '/parent/dashboard',
+  TEACHER_DASHBOARD: '/teacher/dashboard',
+  ADMIN_DASHBOARD: '/admin/dashboard',
 };
 
 export const RISK_THRESHOLDS = {

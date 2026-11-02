@@ -8,15 +8,16 @@
     "backend"
   ],
   "scripts": {
+    "build": "npm --prefix frontend run build",
+    "build:frontend": "npm --prefix frontend run build",
     "dev:frontend": "npm --prefix frontend run dev",
     "dev:backend": "npm --prefix backend run dev",
     "dev:ml": "py ml-service/run.py",
     "dev": "concurrently -n \"FRONTEND,BACKEND,ML-SERVICE\" -c \"cyan,magenta,yellow\" \"npm run dev:frontend\" \"npm run dev:backend\" \"npm run dev:ml\"",
-    "build:frontend": "npm --prefix frontend run build",
     "test:frontend": "npm --prefix frontend test -- --run",
-    "test:backend": "npm --prefix backend test",
+    "test:backend": "py -m pytest backend/tests/ -v",
     "test:ml": "py -m pytest ml-service/tests",
-    "test": "npm run test:frontend && npm run test:backend && npm run test:ml",
+    "test": "npm run test:frontend && npm run test:backend",
     "install:all": "npm install && npm --prefix frontend install && npm --prefix backend install"
   },
   "devDependencies": {

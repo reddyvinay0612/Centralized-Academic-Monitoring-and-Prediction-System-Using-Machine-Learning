@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
+import { AuthProvider } from './context/AuthContext';
 import AppRoutes from './routes/AppRoutes';
 
 // Create TanStack Query Client with sensible caching defaults
@@ -18,17 +19,19 @@ const queryClient = new QueryClient({
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <AppRoutes />
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            duration: 4000,
-            className:
-              'font-body text-caption border border-line bg-surface text-ink shadow-card dark:border-dark-line dark:bg-dark-surface dark:text-dark-text',
-          }}
-        />
-      </BrowserRouter>
+      <AuthProvider>
+        <BrowserRouter>
+          <AppRoutes />
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              duration: 4000,
+              className:
+                'font-body text-caption border border-line bg-surface text-ink shadow-card dark:border-dark-line dark:bg-dark-surface dark:text-dark-text',
+            }}
+          />
+        </BrowserRouter>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
