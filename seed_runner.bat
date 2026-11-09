@@ -11,8 +11,9 @@ echo  - 12 Faculty members & HoDs
 echo  - 240 VTU Students
 echo  - 200 Linked Parents & Guardians
 echo  - VTU CIE Marks, Attendance, Risk Predictions & SHAP Attributions
+echo  - Timetables, Fee Ledgers, Alerts & Mentorship Remarks
 echo.
-py backend/init_db.py
+py backend/init_db.py --reset
 if %ERRORLEVEL% NEQ 0 (
     echo.
     echo [ERROR] Database initialization failed!
