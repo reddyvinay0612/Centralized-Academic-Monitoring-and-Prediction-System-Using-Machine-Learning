@@ -120,6 +120,7 @@ def test_notification_ownership_security(test_client):
         db.session.add(notif)
         db.session.commit()
         st1_notif_id = notif.id
+        db.session.remove()
 
     # Student 2 attempting to mark student 1's notification as read must receive 403 Forbidden
     resp_forbidden = test_client.patch(f'/api/notifications/{st1_notif_id}/read', headers=student2_headers)

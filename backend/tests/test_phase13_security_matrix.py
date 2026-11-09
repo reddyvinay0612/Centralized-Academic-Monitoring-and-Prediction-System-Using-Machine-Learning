@@ -443,6 +443,7 @@ def test_cross_user_notification_ownership_protection(test_client):
         db.session.add(test_notif)
         db.session.commit()
         notif_id = test_notif.id
+        db.session.remove()
 
     # 2. Student 2 tries to mark Student 1's notification as read -> 403 Forbidden
     resp_read = test_client.patch(f'/api/notifications/{notif_id}/read', headers=student2_headers)

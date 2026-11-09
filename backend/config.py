@@ -6,6 +6,10 @@ load_dotenv()
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
+# Load environment settings from root .env and backend/.env
+load_dotenv(os.path.join(BASE_DIR, '..', '.env'), override=True)
+load_dotenv(os.path.join(BASE_DIR, '.env'), override=True)
+
 class Config:
     """Base Configuration for Smart College Management System"""
     SECRET_KEY = os.environ.get('SECRET_KEY', 'smart_college_super_secret_jwt_key_2026_shivamogga')
@@ -46,6 +50,7 @@ class Config:
     SQLALCHEMY_ENGINE_OPTIONS = {
         'pool_pre_ping': True,
         'pool_recycle': 300,
+        'isolation_level': 'READ COMMITTED',
     }
 
     # CORS Settings
@@ -73,6 +78,10 @@ class ProductionConfig(Config):
 class TestingConfig(Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'pool_pre_ping': True,
+        'pool_recycle': 300,
+    }
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(seconds=5)
 
 config_by_name = {
