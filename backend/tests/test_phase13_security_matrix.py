@@ -473,10 +473,16 @@ def test_marks_audit_trail_tamper_proof_enforcement(test_client):
     teacher_headers = get_auth_token(test_client, 'anita.rao@pesitm.edu', 'password123', 'teacher')
 
     # 1. Submitting without reason is rejected with 400 Bad Request
+    with test_client.application.app_context():
+        s_target = Student.query.filter_by(class_id=2).first()
+        target_student_id = s_target.student_id if s_target else 22
+        m = Mark.query.filter_by(student_id=target_student_id, subject_id=1).first()
+        target_cie1 = 39.5 if m and m.cie1 != 39.5 else 35.0
+
     resp_no_reason = test_client.post('/api/teacher/marks/bulk', headers=teacher_headers, json={
         'class_id': 2,
         'subject_id': 1,
-        'marks': [{'student_id': 21, 'cie1': 38.0}]
+        'marks': [{'student_id': target_student_id, 'cie1': 38.0}]
     })
     assert resp_no_reason.status_code == 400
     msg = resp_no_reason.get_json()['message'].lower()
@@ -484,24 +490,23 @@ def test_marks_audit_trail_tamper_proof_enforcement(test_client):
 
     # 2. Submitting with valid institutional reason succeeds
     audit_reason = f"Phase 13 Security Audit Verification - {uuid.uuid4().hex[:8]}"
-    with test_client.application.app_context():
-        # Get current mark to ensure change
-        m = Mark.query.filter_by(student_id=21, subject_id=1).first()
-        target_cie1 = 39.5 if m and m.cie1 != 39.5 else 35.0
 
     resp_valid = test_client.post('/api/teacher/marks/bulk', headers=teacher_headers, json={
         'class_id': 2,
         'subject_id': 1,
         'reason': audit_reason,
-        'marks': [{'student_id': 21, 'cie1': target_cie1}]
+        'marks': [{'student_id': target_student_id, 'cie1': target_cie1}]
     })
     assert resp_valid.status_code == 200
     assert resp_valid.get_json()['success'] is True
 
     # 3. Verify MarkHistory contains the audit log entry
     with test_client.application.app_context():
+        db.session.remove()
         history_entry = MarkHistory.query.filter_by(reason=audit_reason).first()
         assert history_entry is not None
+        assert history_entry.field_name == 'cie1'
+        assert history_entry.changed_by is not None
         assert float(history_entry.new_value) == target_cie1
         assert history_entry.changed_by is not None
         assert history_entry.field_name == 'cie1'
