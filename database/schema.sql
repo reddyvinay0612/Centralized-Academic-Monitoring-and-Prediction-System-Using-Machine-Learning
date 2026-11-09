@@ -28,6 +28,9 @@ DROP TABLE IF EXISTS semester_results;
 DROP TABLE IF EXISTS participation;
 DROP TABLE IF EXISTS marks;
 DROP TABLE IF EXISTS attendance;
+DROP TABLE IF EXISTS fee_payments;
+DROP TABLE IF EXISTS fees;
+DROP TABLE IF EXISTS timetable;
 DROP TABLE IF EXISTS teacher_classes;
 DROP TABLE IF EXISTS parent_students;
 DROP TABLE IF EXISTS students;
@@ -194,7 +197,58 @@ CREATE TABLE teacher_classes (
 ) ENGINE=InnoDB;
 
 -- ---------------------------------------------------------------------
--- 10. ATTENDANCE (Aggregated Subject Attendance Logs)
+-- 10. TIMETABLE (Weekly Classroom Lecture & Lab Schedules)
+-- ---------------------------------------------------------------------
+CREATE TABLE timetable (
+  timetable_id INT AUTO_INCREMENT PRIMARY KEY,
+  class_id INT NOT NULL,
+  subject_id INT NOT NULL,
+  teacher_id INT NULL,
+  day_of_week VARCHAR(15) NOT NULL,
+  start_time VARCHAR(10) NOT NULL,
+  end_time VARCHAR(10) NOT NULL,
+  room_number VARCHAR(20) NOT NULL DEFAULT 'LH-101',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (class_id) REFERENCES classes(class_id) ON DELETE CASCADE,
+  FOREIGN KEY (subject_id) REFERENCES subjects(subject_id) ON DELETE CASCADE,
+  FOREIGN KEY (teacher_id) REFERENCES teachers(teacher_id) ON DELETE SET NULL,
+  INDEX idx_timetable_class (class_id),
+  INDEX idx_timetable_day (day_of_week)
+) ENGINE=InnoDB;
+
+-- ---------------------------------------------------------------------
+-- 11. FEES (Annual Institutional Tuition & Fee Structure per Class)
+-- ---------------------------------------------------------------------
+CREATE TABLE fees (
+  fee_id INT AUTO_INCREMENT PRIMARY KEY,
+  class_id INT NOT NULL,
+  academic_year VARCHAR(15) NOT NULL,
+  total_amount DECIMAL(10,2) NOT NULL,
+  due_date DATETIME NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (class_id) REFERENCES classes(class_id) ON DELETE CASCADE,
+  INDEX idx_fees_class (class_id)
+) ENGINE=InnoDB;
+
+-- ---------------------------------------------------------------------
+-- 12. FEE_PAYMENTS (Student Transaction & Receipt Ledger)
+-- ---------------------------------------------------------------------
+CREATE TABLE fee_payments (
+  payment_id INT AUTO_INCREMENT PRIMARY KEY,
+  student_id INT NOT NULL,
+  amount_paid DECIMAL(10,2) NOT NULL,
+  payment_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+  payment_mode VARCHAR(50) DEFAULT 'Online/UPI' NOT NULL,
+  transaction_reference VARCHAR(100) NOT NULL UNIQUE,
+  status ENUM('completed', 'pending', 'failed') DEFAULT 'completed' NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE,
+  INDEX idx_fee_payments_student (student_id),
+  INDEX idx_fee_payments_status (status)
+) ENGINE=InnoDB;
+
+-- ---------------------------------------------------------------------
+-- 13. ATTENDANCE (Aggregated Subject Attendance Logs)
 -- ---------------------------------------------------------------------
 CREATE TABLE attendance (
   attendance_id INT AUTO_INCREMENT PRIMARY KEY,
