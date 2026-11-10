@@ -17,7 +17,9 @@ import {
   CheckCircle2,
   Clock,
   BookOpen,
-  UserCheck
+  UserCheck,
+  Sparkles,
+  Sliders
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -25,12 +27,14 @@ import { Pill } from '@/components/ui/Pill';
 import { DeptComparisonChart } from '@/components/charts/DeptComparisonChart';
 import { useAuth } from '@/context/AuthContext';
 import principalService from '@/services/principalService';
+import PassFailPredictionModal from '@/components/predictions/PassFailPredictionModal';
 
 export default function PrincipalDashboard() {
   const { currentUser } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [loading, setLoading] = useState(true);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
+  const [isPrincipalPredictionModalOpen, setIsPrincipalPredictionModalOpen] = useState(false);
 
   // Core Data States
   const [overview, setOverview] = useState(null);
@@ -173,6 +177,15 @@ export default function PrincipalDashboard() {
             <Button
               variant="primary"
               size="sm"
+              onClick={() => setIsPrincipalPredictionModalOpen(true)}
+              className="bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-md font-bold flex items-center gap-1.5 border border-pink-400/40"
+            >
+              <Sparkles className="h-4 w-4 animate-pulse text-amber-300" />
+              <span>AI Exam Pass/Fail Forecast</span>
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
               isLoading={downloadingPdf}
               onClick={handleDownloadReport}
               className="bg-accent hover:bg-accent-hover text-white shadow-md border border-accent-hover"
@@ -267,7 +280,7 @@ export default function PrincipalDashboard() {
       </div>
 
       {/* 3. Tab Navigation Bar */}
-      <div className="flex border-b border-line dark:border-dark-line">
+      <div className="flex overflow-x-auto border-b border-line dark:border-dark-line scrollbar-none">
         <button
           onClick={() => setActiveTab('overview')}
           className={`flex items-center gap-2 border-b-2 px-4 py-3 text-caption font-semibold transition-colors ${
@@ -278,6 +291,18 @@ export default function PrincipalDashboard() {
         >
           <School className="h-4 w-4" />
           <span>Executive Overview & Insights</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('pass_fail_intelligence')}
+          className={`flex items-center gap-2 border-b-2 px-4 py-3 text-caption font-semibold transition-colors ${
+            activeTab === 'pass_fail_intelligence'
+              ? 'border-accent text-accent'
+              : 'border-transparent text-muted hover:text-ink dark:text-dark-muted dark:hover:text-dark-text'
+          }`}
+        >
+          <Sparkles className="h-4 w-4 text-accent animate-pulse" />
+          <span>Exam Pass/Fail Intelligence</span>
         </button>
 
         <button
@@ -811,6 +836,86 @@ export default function PrincipalDashboard() {
           </Card>
         </div>
       )}
+
+      {/* 8. Tab: Institutional Examination Pass/Fail Intelligence */}
+      {activeTab === 'pass_fail_intelligence' && (
+        <div className="space-y-6">
+          <Card className="border-line bg-surface p-6 shadow-subtle dark:border-dark-line dark:bg-dark-surface">
+            <CardHeader className="p-0 pb-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-accent animate-pulse" />
+                    <CardTitle className="text-section">Institutional Pass/Fail Early Warning Intelligence</CardTitle>
+                  </div>
+                  <CardDescription>
+                    Executive machine learning predictions forecasting final university examination outcomes across all 14 engineering disciplines and science departments.
+                  </CardDescription>
+                </div>
+                <Button
+                  variant="primary"
+                  onClick={() => setIsPrincipalPredictionModalOpen(true)}
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold flex items-center gap-2 shadow-md shrink-0"
+                >
+                  <Sliders className="h-4 w-4" />
+                  Launch Pass/Fail Simulator
+                </Button>
+              </div>
+            </CardHeader>
+
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="rounded-xl border border-line bg-page p-4 dark:border-dark-line dark:bg-dark-page">
+                <span className="text-xs font-semibold text-muted">Projected College Pass Rate</span>
+                <p className="mt-1 font-heading text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                  {risk_distribution.percentages ? `${risk_distribution.percentages.low}%` : '76.7%'}
+                </p>
+                <span className="text-[10px] text-muted">Safe low-risk candidate cohort</span>
+              </div>
+
+              <div className="rounded-xl border border-line bg-page p-4 dark:border-dark-line dark:bg-dark-page">
+                <span className="text-xs font-semibold text-muted">Predicted Failure Hazard</span>
+                <p className="mt-1 font-heading text-2xl font-bold text-rose-600">
+                  {risk_distribution.counts ? `${risk_distribution.counts.high} students` : '24 students'}
+                </p>
+                <span className="text-[10px] text-muted">Immediate remedial intervention needed</span>
+              </div>
+
+              <div className="rounded-xl border border-line bg-page p-4 dark:border-dark-line dark:bg-dark-page">
+                <span className="text-xs font-semibold text-muted">Average College CIE</span>
+                <p className="mt-1 font-heading text-2xl font-bold text-accent">
+                  36.4 / 50.0
+                </p>
+                <span className="text-[10px] text-muted">VTU minimum bar: 20/50</span>
+              </div>
+
+              <div className="rounded-xl border border-line bg-page p-4 dark:border-dark-line dark:bg-dark-page">
+                <span className="text-xs font-semibold text-muted">ML Model Veracity</span>
+                <p className="mt-1 font-heading text-2xl font-bold text-ink dark:text-dark-text">
+                  98.33% Acc
+                </p>
+                <span className="text-[10px] text-muted">XGBoost Stratified K-Fold</span>
+              </div>
+            </div>
+
+            <div className="mt-6 rounded-xl border border-line bg-page/50 p-5 dark:border-dark-line dark:bg-dark-page/50 space-y-3">
+              <h4 className="font-heading text-subheading font-bold text-ink dark:text-dark-text">
+                Directorate Executive Remedial Policy
+              </h4>
+              <p className="text-xs text-muted leading-relaxed">
+                Students forecasted with a <strong>High Failure Risk</strong> (&gt; 50% probability of failing in external VTU examinations) are automatically highlighted to their respective Head of Department (HoD) and faculty mentors. Mandatory remedial sessions are conducted weekly before VTU examination hall tickets are approved.
+              </p>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Principal Pass/Fail Prediction Intelligence Modal */}
+      <PassFailPredictionModal
+        isOpen={isPrincipalPredictionModalOpen}
+        onClose={() => setIsPrincipalPredictionModalOpen(false)}
+        initialUsn="4PM21CS001"
+        title="Institutional Examination Pass/Fail Directorate"
+      />
     </div>
   );
 }

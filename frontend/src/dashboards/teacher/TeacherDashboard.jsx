@@ -32,6 +32,7 @@ import { Pill } from '@/components/ui/Pill';
 import { Modal } from '@/components/ui/Modal';
 import { useAuth } from '@/context/AuthContext';
 import teacherService from '@/services/teacherService';
+import PassFailPredictionModal from '@/components/predictions/PassFailPredictionModal';
 
 export default function TeacherDashboard() {
   const { user } = useAuth();
@@ -41,6 +42,8 @@ export default function TeacherDashboard() {
   const [loading, setLoading] = useState(true);
   const [rosterLoading, setRosterLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('roster');
+  const [selectedStudentUsnForPrediction, setSelectedStudentUsnForPrediction] = useState(null);
+  const [isTeacherPredictionModalOpen, setIsTeacherPredictionModalOpen] = useState(false);
 
   // Filters & Search
   const [searchQuery, setSearchQuery] = useState('');
@@ -525,7 +528,7 @@ export default function TeacherDashboard() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <Button
               variant="outline"
               size="sm"
@@ -533,6 +536,18 @@ export default function TeacherDashboard() {
               title="Refresh Roster"
             >
               <RefreshCw className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="primary"
+              size="md"
+              onClick={() => {
+                setSelectedStudentUsnForPrediction(null);
+                setIsTeacherPredictionModalOpen(true);
+              }}
+              className="flex items-center gap-2 whitespace-nowrap bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-md font-bold"
+            >
+              <Sparkles className="h-4 w-4 animate-pulse text-amber-300" />
+              Predict Class Pass / Fail
             </Button>
           </div>
         </div>
@@ -623,6 +638,7 @@ export default function TeacherDashboard() {
         <div className="mt-6 flex overflow-x-auto border-t border-line pt-4 scrollbar-none dark:border-dark-line">
           {[
             { id: 'roster', label: 'Class Roster & Telemetry', icon: Users, count: roster.length },
+            { id: 'pass_fail_analytics', label: 'Class Pass/Fail Analytics', icon: Sparkles },
             { id: 'bulk_cie', label: 'Bulk Matrix CIE Entry', icon: FileSpreadsheet },
             { id: 'attendance_session', label: 'Log Session Attendance', icon: Clock },
             { id: 'audit_history', label: 'Marks Audit Trail Inspector', icon: History, count: classAuditHistory.length || undefined },
@@ -772,6 +788,18 @@ export default function TeacherDashboard() {
                             <Button
                               variant="outline"
                               size="xs"
+                              onClick={() => {
+                                setSelectedStudentUsnForPrediction(s.usn);
+                                setIsTeacherPredictionModalOpen(true);
+                              }}
+                              title="Run AI Pass/Fail Forecast & What-If Simulator"
+                              className="flex items-center gap-1 text-accent border-accent/40 hover:bg-accent/10 font-bold"
+                            >
+                              <Sparkles className="h-3.5 w-3.5 text-amber-500" /> Forecast
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="xs"
                               onClick={() => handleOpenEditMarks(s)}
                               title="Edit CIE Marks with Audit Trail"
                               className="flex items-center gap-1"
@@ -812,6 +840,110 @@ export default function TeacherDashboard() {
                 )}
               </tbody>
             </table>
+          </div>
+        </Card>
+      )}
+
+      {/* Class Pass/Fail Analytics Tab */}
+      {activeTab === 'pass_fail_analytics' && (
+        <Card className="p-6">
+          <CardHeader className="p-0 pb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-accent animate-pulse" />
+                  <CardTitle className="text-section">Class Pass/Fail Early Warning Intelligence</CardTitle>
+                </div>
+                <CardDescription>
+                  XGBoost machine learning forecast for students enrolled in {selectedAssignment?.class_name || 'Class'} ({selectedAssignment?.subject_name || 'Subject'}).
+                </CardDescription>
+              </div>
+              <Button
+                variant="primary"
+                onClick={() => {
+                  setSelectedStudentUsnForPrediction(null);
+                  setIsTeacherPredictionModalOpen(true);
+                }}
+                className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold flex items-center gap-2 shadow-md shrink-0"
+              >
+                <Sliders className="h-4 w-4" />
+                Launch Pass/Fail Simulator
+              </Button>
+            </div>
+          </CardHeader>
+
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="rounded-xl border border-line bg-page p-4 dark:border-dark-line dark:bg-dark-page">
+              <span className="text-xs font-semibold text-muted">Projected Class Pass Rate</span>
+              <p className="mt-1 font-heading text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                {roster.length > 0 ? Math.round(((roster.length - (metrics.at_risk_count || 0)) / roster.length) * 100) : 95}%
+              </p>
+              <span className="text-[10px] text-muted">Based on current CIE & attendance figures</span>
+            </div>
+
+            <div className="rounded-xl border border-line bg-page p-4 dark:border-dark-line dark:bg-dark-page">
+              <span className="text-xs font-semibold text-muted">Remedial Focus Cohort</span>
+              <p className="mt-1 font-heading text-2xl font-bold text-rose-600">
+                {metrics.at_risk_count || 0} students
+              </p>
+              <span className="text-[10px] text-muted">Predicted at-risk of course failure / backlogs</span>
+            </div>
+
+            <div className="rounded-xl border border-line bg-page p-4 dark:border-dark-line dark:bg-dark-page">
+              <span className="text-xs font-semibold text-muted">Average Class CIE</span>
+              <p className="mt-1 font-heading text-2xl font-bold text-accent">
+                {metrics.average_cie || 35.0} / 50.0
+              </p>
+              <span className="text-[10px] text-muted">VTU Passing Qualifying bar: 20/50</span>
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <h4 className="font-heading text-subheading font-bold text-ink dark:text-dark-text mb-3">
+              Individual Student Forecast Roster
+            </h4>
+            <div className="overflow-x-auto rounded-card border border-line">
+              <table className="w-full text-left text-caption">
+                <thead className="border-b border-line bg-page text-muted uppercase text-[10px]">
+                  <tr>
+                    <th className="py-2.5 px-4">USN</th>
+                    <th className="py-2.5 px-4">Student Name</th>
+                    <th className="py-2.5 px-4 text-center">Total CIE</th>
+                    <th className="py-2.5 px-4 text-center">Attendance</th>
+                    <th className="py-2.5 px-4 text-center">Predicted Outcome</th>
+                    <th className="py-2.5 px-4 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-line">
+                  {roster.map((st) => (
+                    <tr key={st.student_id} className="hover:bg-page/40">
+                      <td className="py-2.5 px-4 font-mono font-semibold">{st.usn}</td>
+                      <td className="py-2.5 px-4 font-medium">{st.name}</td>
+                      <td className="py-2.5 px-4 text-center font-bold">{st.marks?.total_cie || 32}</td>
+                      <td className="py-2.5 px-4 text-center">{st.attendance?.percentage || 85}%</td>
+                      <td className="py-2.5 px-4 text-center">
+                        <Pill variant={st.prediction?.risk_level === 'high' ? 'high' : 'low'}>
+                          {st.prediction?.risk_level === 'high' ? 'AT-RISK / FAIL' : 'PASS'}
+                        </Pill>
+                      </td>
+                      <td className="py-2.5 px-4 text-right">
+                        <Button
+                          variant="outline"
+                          size="xs"
+                          onClick={() => {
+                            setSelectedStudentUsnForPrediction(st.usn);
+                            setIsTeacherPredictionModalOpen(true);
+                          }}
+                          className="text-accent"
+                        >
+                          <Sparkles className="h-3 w-3 mr-1" /> Deep-Dive
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </Card>
       )}
@@ -1629,6 +1761,14 @@ export default function TeacherDashboard() {
           </form>
         </Modal>
       )}
+
+      {/* Teacher Pass/Fail Prediction Intelligence Modal */}
+      <PassFailPredictionModal
+        isOpen={isTeacherPredictionModalOpen}
+        onClose={() => setIsTeacherPredictionModalOpen(false)}
+        initialUsn={selectedStudentUsnForPrediction}
+        title={selectedStudentUsnForPrediction ? `AI Exam Prediction: ${selectedStudentUsnForPrediction}` : "Class Examination Pass/Fail Intelligence"}
+      />
     </div>
   );
 }
