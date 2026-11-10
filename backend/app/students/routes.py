@@ -422,6 +422,97 @@ def get_student_prediction():
     }), 200
 
 
+@students_bp.route('/predict-pass-fail', methods=['GET', 'POST'])
+@authenticate()
+def predict_student_pass_fail():
+    """
+    Predict PASS or FAIL outcome for student using XGBoost model
+    trained on Past IA Marks & Past Semester Results.
+    Supports GET (uses database records) and POST (what-if simulation).
+    """
+    student, err = resolve_target_student(request.current_user)
+    if err:
+        return err
+
+    from backend.app.services.ml_prediction_service import run_pass_fail_prediction
+    import numpy as np
+
+    # Default values from student's historical records
+    marks_records = Mark.query.filter_by(student_id=student.student_id).all()
+    sem_results = SemesterResult.query.filter_by(student_id=student.student_id).order_by(SemesterResult.semester.asc()).all()
+    att_records = Attendance.query.filter_by(student_id=student.student_id).all()
+
+    # IA Marks averages
+    ia1_scores = [float(m.cie1) for m in marks_records if m.cie1 is not None]
+    ia2_scores = [float(m.cie2) for m in marks_records if m.cie2 is not None]
+    ia3_scores = [float(m.cie3) for m in marks_records if m.cie3 is not None]
+    assign_scores = [float(m.assignment_marks) for m in marks_records if m.assignment_marks is not None]
+
+    ia1 = float(np.mean(ia1_scores)) if ia1_scores else 20.0
+    ia2 = float(np.mean(ia2_scores)) if ia2_scores else 20.0
+    ia3 = float(np.mean(ia3_scores)) if ia3_scores else 20.0
+    assignment = float(np.mean(assign_scores)) if assign_scores else 8.5
+
+
+    # Past Semester SGPAs and CGPA
+    sgpa_by_sem = {sr.semester: float(sr.sgpa) for sr in sem_results if sr.sgpa is not None}
+    sem1 = sgpa_by_sem.get(1, 7.0)
+    sem2 = sgpa_by_sem.get(2, 7.0)
+    sem3 = sgpa_by_sem.get(3, 7.0)
+    sem4 = sgpa_by_sem.get(4, 7.0)
+    all_sgpas = [float(sr.sgpa) for sr in sem_results if sr.sgpa is not None]
+    cgpa = float(np.mean(all_sgpas)) if all_sgpas else ((sem1 + sem2 + sem3 + sem4) / 4.0)
+    backlogs = sum(int(sr.backlogs or 0) for sr in sem_results)
+
+    # Attendance
+    tot_held = sum(r.total_classes for r in att_records)
+    tot_att = sum(r.attended_classes for r in att_records)
+    att_pct = (tot_att / tot_held * 100.0) if tot_held > 0 else 85.0
+
+    # Allow query parameter or JSON override for "What-If" simulator
+    if request.method == 'POST' and request.is_json:
+        data = request.get_json()
+        ia1 = float(data.get('ia1', ia1))
+        ia2 = float(data.get('ia2', ia2))
+        ia3 = float(data.get('ia3', ia3))
+        sem1 = float(data.get('sem1', sem1))
+        sem2 = float(data.get('sem2', sem2))
+        sem3 = float(data.get('sem3', sem3))
+        sem4 = float(data.get('sem4', sem4))
+        cgpa = float(data.get('cgpa', cgpa))
+        backlogs = int(data.get('backlogs', backlogs))
+        att_pct = float(data.get('attendance', att_pct))
+
+    result = run_pass_fail_prediction(
+        ia1=ia1, ia2=ia2, ia3=ia3,
+        sem1_sgpa=sem1, sem2_sgpa=sem2, sem3_sgpa=sem3, sem4_sgpa=sem4,
+        cgpa=cgpa, backlogs=backlogs, attendance=att_pct
+    )
+
+    return jsonify({
+        'success': True,
+        'student': {
+            'student_id': student.student_id,
+            'usn': student.usn,
+            'name': student.name
+        },
+        'input_measures': {
+            'ia1': round(ia1, 1),
+            'ia2': round(ia2, 1),
+            'ia3': round(ia3, 1),
+            'sem1_sgpa': round(sem1, 2),
+            'sem2_sgpa': round(sem2, 2),
+            'sem3_sgpa': round(sem3, 2),
+            'sem4_sgpa': round(sem4, 2),
+            'cumulative_cgpa': round(cgpa, 2),
+            'active_backlogs': backlogs,
+            'attendance_percentage': round(att_pct, 1)
+        },
+        'prediction_result': result
+    }), 200
+
+
+
 @students_bp.route('/report/download', methods=['GET'])
 @authenticate()
 def download_student_report():
