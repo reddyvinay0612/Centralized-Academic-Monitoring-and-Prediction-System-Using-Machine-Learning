@@ -27,7 +27,7 @@ class Config:
     
     # Database Configuration (MySQL with automatic fallback to local SQLite for seamless setup)
     DB_USER = os.environ.get('DB_USER', 'root')
-    DB_PASSWORD = os.environ.get('DB_PASSWORD', 'rootpassword')
+    DB_PASSWORD = os.environ.get('DB_PASSWORD', '')
     DB_HOST = os.environ.get('DB_HOST', 'localhost')
     DB_PORT = os.environ.get('DB_PORT', '3306')
     DB_NAME = os.environ.get('DB_NAME', 'camps_db')
@@ -35,23 +35,49 @@ class Config:
     # Primary MySQL Connection String
     MYSQL_URI = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?charset=utf8mb4"
     
-    # If DATABASE_URL is provided, use it; otherwise use SQLite locally or MySQL when USE_MYSQL=true
-    USE_MYSQL = os.environ.get('USE_MYSQL', 'false').lower() == 'true'
+    # SQLite Path
     SQLITE_PATH = os.path.join(BASE_DIR, 'camps_smart_college.db').replace('\\', '/')
     SQLITE_URI = f"sqlite:///{SQLITE_PATH}"
     
+    # Check MySQL connectivity before deciding URI
+    _target_mysql_uri = None
     if os.environ.get('DATABASE_URL') and not os.environ.get('DATABASE_URL').startswith('sqlite:///camps'):
-        SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
-    elif USE_MYSQL:
-        SQLALCHEMY_DATABASE_URI = MYSQL_URI
+        _target_mysql_uri = os.environ.get('DATABASE_URL')
+    elif os.environ.get('USE_MYSQL', 'false').lower() == 'true':
+        _target_mysql_uri = MYSQL_URI
+
+    _mysql_connected = False
+    if _target_mysql_uri and 'mysql' in _target_mysql_uri:
+        try:
+            import pymysql
+            from urllib.parse import urlparse
+            _p = urlparse(_target_mysql_uri)
+            _c = pymysql.connect(
+                host=_p.hostname or 'localhost',
+                user=_p.username or 'root',
+                password=_p.password or '',
+                port=_p.port or 3306,
+                connect_timeout=2
+            )
+            _c.close()
+            _mysql_connected = True
+        except Exception:
+            _mysql_connected = False
+
+    if _mysql_connected and _target_mysql_uri:
+        SQLALCHEMY_DATABASE_URI = _target_mysql_uri
+        SQLALCHEMY_ENGINE_OPTIONS = {
+            'pool_pre_ping': True,
+            'pool_recycle': 300,
+            'isolation_level': 'READ COMMITTED',
+        }
     else:
         SQLALCHEMY_DATABASE_URI = SQLITE_URI
+        SQLALCHEMY_ENGINE_OPTIONS = {
+            'pool_pre_ping': True,
+        }
+
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SQLALCHEMY_ENGINE_OPTIONS = {
-        'pool_pre_ping': True,
-        'pool_recycle': 300,
-        'isolation_level': 'READ COMMITTED',
-    }
 
     # CORS Settings
     CLIENT_URL = os.environ.get('CLIENT_URL', 'http://localhost:5173')

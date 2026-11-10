@@ -1,30 +1,110 @@
 import React, { useState, useEffect } from 'react';
-import { Outlet, NavLink, Link, useNavigate } from 'react-router-dom';
+import { Outlet, NavLink, Link, useNavigate, useLocation } from 'react-router-dom';
 import {
-  LayoutDashboard,
-  Users,
-  AlertTriangle,
-  UploadCloud,
   GraduationCap,
   ShieldCheck,
   LogOut,
   Moon,
   Sun,
   School,
-  ChevronDown,
   Bell,
+  HeartHandshake,
+  BookOpen,
+  User,
+  LayoutDashboard,
 } from 'lucide-react';
 import { ROUTES } from '@/utils/constants';
 import { useAuth } from '@/context/AuthContext';
-import { INITIAL_USERS } from '@/mocks/data';
 import NotificationCenter from '@/components/notifications/NotificationCenter';
 import notificationService from '@/services/notificationService';
 
+const getRoleConfig = (role) => {
+  switch (role) {
+    case 'student':
+      return {
+        label: 'Student Portal',
+        badgeClass: 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 border-blue-200 dark:border-blue-800',
+        avatarBg: 'bg-blue-600',
+        homeRoute: '/student/dashboard',
+        allowedRoutes: ['/student/dashboard', '/my-progress'],
+        navLinks: [
+          { to: '/student/dashboard', label: 'My Academic Dashboard', icon: GraduationCap },
+        ],
+      };
+    case 'parent':
+      return {
+        label: 'Parent Portal',
+        badgeClass: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800',
+        avatarBg: 'bg-emerald-600',
+        homeRoute: '/parent/dashboard',
+        allowedRoutes: ['/parent/dashboard'],
+        navLinks: [
+          { to: '/parent/dashboard', label: 'Ward Monitoring & Reports', icon: HeartHandshake },
+        ],
+      };
+    case 'teacher':
+    case 'hod':
+      return {
+        label: role === 'hod' ? 'HoD Portal' : 'Faculty Portal',
+        badgeClass: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800',
+        avatarBg: 'bg-indigo-600',
+        homeRoute: '/teacher/dashboard',
+        allowedRoutes: ['/teacher/dashboard'],
+        navLinks: [
+          { to: '/teacher/dashboard', label: 'Assigned Classes & Marks Entry', icon: BookOpen },
+        ],
+      };
+    case 'principal':
+      return {
+        label: 'Executive Directorate',
+        badgeClass: 'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300 border-purple-200 dark:border-purple-800',
+        avatarBg: 'bg-purple-600',
+        homeRoute: '/principal/dashboard',
+        allowedRoutes: ['/principal/dashboard'],
+        navLinks: [
+          { to: '/principal/dashboard', label: 'Institutional Directorate', icon: School },
+        ],
+      };
+    case 'admin':
+    default:
+      return {
+        label: 'System Admin',
+        badgeClass: 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 border-amber-200 dark:border-amber-800',
+        avatarBg: 'bg-amber-600',
+        homeRoute: '/admin/dashboard',
+        allowedRoutes: ['/admin/dashboard', '/overview', '/students', '/alerts', '/upload', '/admin'],
+        navLinks: [
+          { to: '/admin/dashboard', label: 'Admin Directory & Security', icon: ShieldCheck },
+          { to: '/principal/dashboard', label: 'Executive Analytics', icon: School },
+        ],
+      };
+  }
+};
+
 export default function AppShell() {
-  const { currentUser, switchRole, logout, darkMode, toggleDarkMode } = useAuth();
+  const { currentUser, logout, darkMode, toggleDarkMode } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [unreadNotifCount, setUnreadNotifCount] = useState(0);
+
+  const roleConfig = getRoleConfig(currentUser?.role || 'student');
+
+  // Enforce strict horizontal route protection:
+  // If user tries to access a dashboard not permitted for their role, redirect them to their home route.
+  useEffect(() => {
+    if (!currentUser) {
+      navigate('/login', { replace: true });
+      return;
+    }
+    const currentPath = location.pathname;
+    // Allow public or generic routes if needed, otherwise verify allowed routes
+    const isAllowed = roleConfig.allowedRoutes.some((route) => currentPath.startsWith(route));
+    if (!isAllowed) {
+      console.warn(`Role '${currentUser.role}' unauthorized for route '${currentPath}'. Redirecting to ${roleConfig.homeRoute}.`);
+      navigate(roleConfig.homeRoute, { replace: true });
+    }
+  }, [location.pathname, currentUser, navigate, roleConfig]);
 
   useEffect(() => {
     let isMounted = true;
@@ -44,30 +124,22 @@ export default function AppShell() {
     };
   }, [currentUser]);
 
-  const handleRoleChange = (e) => {
-    const role = e.target.value;
-    switchRole(role);
-    if (role === 'student') {
-      navigate('/student/dashboard');
-    } else if (role === 'parent') {
-      navigate('/parent/dashboard');
-    } else if (role === 'teacher') {
-      navigate('/teacher/dashboard');
-    } else if (role === 'principal') {
-      navigate('/principal/dashboard');
-    } else if (role === 'admin') {
-      navigate('/admin/dashboard');
-    } else {
-      navigate(ROUTES.OVERVIEW);
-    }
-  };
-
   const navLinkClass = ({ isActive }) =>
     `inline-flex items-center gap-2 px-3 py-1.5 text-caption font-medium rounded-input transition-colors duration-150 ${
       isActive
         ? 'bg-accent text-white shadow-subtle'
         : 'text-muted hover:text-ink hover:bg-page dark:text-dark-muted dark:hover:text-dark-text dark:hover:bg-dark-surface'
     }`;
+
+  const displayName = currentUser?.name || currentUser?.username || 'Authenticated User';
+  const displayUsn = currentUser?.usn ? `(${currentUser.usn})` : '';
+  const initials = displayName
+    .split(' ')
+    .map((w) => w[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join('')
+    .toUpperCase() || 'U';
 
   return (
     <div className="flex min-h-screen flex-col bg-page text-ink dark:bg-dark-page dark:text-dark-text">
@@ -79,9 +151,9 @@ export default function AppShell() {
             <span>PES Institute of Technology and Management, Shivamogga &bull; VTU Affiliated</span>
           </div>
           <div className="flex items-center gap-3 text-white/70">
-            <span>Dept. of Computer Science & Engineering</span>
+            <span>Centralized Academic Monitoring (CAMPS-ML)</span>
             <span>&bull;</span>
-            <span className="font-mono text-[10px] text-accent-hover">XGBoost v1.0.0 Active</span>
+            <span className="font-mono text-[10px] text-accent-hover">XGBoost + TreeSHAP Active</span>
           </div>
         </div>
       </div>
@@ -89,8 +161,8 @@ export default function AppShell() {
       {/* Main Navigation Bar */}
       <header className="sticky top-0 z-40 border-b border-line bg-surface/95 px-6 py-2.5 backdrop-blur-md shadow-subtle dark:border-dark-line dark:bg-dark-surface/95">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
-          {/* Logo & Platform Name */}
-          <Link to={ROUTES.OVERVIEW} className="flex items-center gap-2.5 text-decoration-none">
+          {/* Logo & Portal Name */}
+          <Link to={roleConfig.homeRoute} className="flex items-center gap-2.5 text-decoration-none">
             <div className="flex h-9 w-9 items-center justify-center rounded-input bg-accent font-heading font-bold text-white shadow-subtle">
               C
             </div>
@@ -99,65 +171,39 @@ export default function AppShell() {
                 CAMPS-ML
               </span>
               <span className="ml-1.5 hidden rounded-pill bg-accent/10 px-2 py-0.5 text-[10px] font-semibold text-accent sm:inline-block">
-                Academic Monitor
+                {roleConfig.label}
               </span>
             </div>
           </Link>
 
-          {/* Navigation Menu */}
+          {/* Dynamic Role-Scoped Navigation Menu */}
           <nav className="hidden items-center gap-1.5 md:flex">
-            <NavLink to={ROUTES.OVERVIEW} className={navLinkClass}>
-              <LayoutDashboard className="h-4 w-4" />
-              <span>Overview</span>
-            </NavLink>
-            <NavLink to={ROUTES.STUDENTS} className={navLinkClass}>
-              <Users className="h-4 w-4" />
-              <span>Students</span>
-            </NavLink>
-            <NavLink to={ROUTES.ALERTS} className={navLinkClass}>
-              <div className="relative">
-                <AlertTriangle className="h-4 w-4" />
-                <span className="absolute -top-1 -right-1 flex h-2 w-2 rounded-full bg-risk-high" />
-              </div>
-              <span>Alerts</span>
-            </NavLink>
-            <NavLink to={ROUTES.UPLOAD} className={navLinkClass}>
-              <UploadCloud className="h-4 w-4" />
-              <span>Upload</span>
-            </NavLink>
-            <NavLink to={ROUTES.MY_PROGRESS} className={navLinkClass}>
-              <GraduationCap className="h-4 w-4" />
-              <span>My Progress</span>
-            </NavLink>
-            <NavLink to={ROUTES.ADMIN} className={navLinkClass}>
-              <ShieldCheck className="h-4 w-4" />
-              <span>Admin</span>
-            </NavLink>
-            <NavLink to="/principal/dashboard" className={navLinkClass}>
-              <School className="h-4 w-4" />
-              <span>Principal</span>
-            </NavLink>
+            {roleConfig.navLinks.map((item) => {
+              const Icon = item.icon;
+              return (
+                <NavLink key={item.to} to={item.to} className={navLinkClass}>
+                  <Icon className="h-4 w-4" />
+                  <span>{item.label}</span>
+                </NavLink>
+              );
+            })}
           </nav>
 
-          {/* User Controls & Role Quick Switcher */}
-          <div className="flex items-center gap-2.5">
-            {/* Quick Persona / Role Switcher for viva demo */}
-            <div className="flex items-center gap-1.5 rounded-input border border-line bg-page px-2.5 py-1 text-caption dark:border-dark-line dark:bg-dark-page">
-              <span className="text-[11px] font-semibold uppercase text-muted dark:text-dark-muted hidden sm:inline">
-                Role:
-              </span>
-              <select
-                value={currentUser?.role || 'admin'}
-                onChange={handleRoleChange}
-                className="bg-transparent text-caption font-semibold text-ink dark:text-dark-text focus:outline-none cursor-pointer"
-                title="Switch role for demo inspection"
-              >
-                <option value="principal">Principal (Dr. Chaitanya)</option>
-                <option value="admin">Admin (Dr. Halesh)</option>
-                <option value="teacher">Teacher (Prof. Rao)</option>
-                <option value="student">Student (Poorvi)</option>
-                <option value="parent">Parent (Smt. Shailaja)</option>
-              </select>
+          {/* User Controls & Authenticated User Profile */}
+          <div className="flex items-center gap-3">
+            {/* Read-Only Locked User Identity Badge (No Role Switcher Dropdown!) */}
+            <div className="flex items-center gap-2 rounded-full border border-line bg-page px-3 py-1 text-caption dark:border-dark-line dark:bg-dark-page">
+              <div className={`flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold text-white ${roleConfig.avatarBg}`}>
+                {initials}
+              </div>
+              <div className="flex flex-col text-left">
+                <span className="text-[11px] font-bold text-ink dark:text-dark-text leading-tight max-w-[130px] sm:max-w-[180px] truncate">
+                  {displayName} {displayUsn}
+                </span>
+                <span className="text-[9px] font-semibold uppercase tracking-wider text-muted dark:text-dark-muted">
+                  {roleConfig.label}
+                </span>
+              </div>
             </div>
 
             {/* Notification Bell Button */}
@@ -185,14 +231,14 @@ export default function AppShell() {
               {darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
 
-            {/* Sign Out */}
+            {/* Secure Sign Out Button */}
             <button
               onClick={() => {
                 logout();
-                navigate(ROUTES.LOGIN);
+                navigate('/login');
               }}
               className="flex items-center gap-1 rounded-input border border-line px-2.5 py-1.5 text-caption text-muted transition hover:bg-risk-high/10 hover:text-risk-high dark:border-dark-line dark:text-dark-muted"
-              title="Sign out"
+              title="Sign out of your session"
             >
               <LogOut className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Sign out</span>
@@ -217,6 +263,7 @@ export default function AppShell() {
           </span>
         </div>
       </footer>
+
       {/* In-Portal Notification Center Drawer */}
       <NotificationCenter
         isOpen={isNotifOpen}
