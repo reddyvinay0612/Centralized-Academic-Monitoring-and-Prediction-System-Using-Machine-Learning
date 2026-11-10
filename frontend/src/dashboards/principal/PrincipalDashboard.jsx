@@ -129,7 +129,7 @@ export default function PrincipalDashboard() {
   }
 
   const { headcount, academic_health, risk_distribution, alerts } = overview || {
-    headcount: { total_students: 240, total_faculty: 12, total_departments: 4, total_classes: 12, student_faculty_ratio: 20 },
+    headcount: { total_students: 240, total_faculty: 12, total_departments: 14, total_classes: 12, student_faculty_ratio: 20 },
     academic_health: { college_avg_attendance: 84.5, college_avg_cgpa: 7.92, critical_shortage_records: 18 },
     risk_distribution: { counts: { high: 24, medium: 48, low: 168 }, percentages: { high: 10, medium: 20, low: 70 }, total_evaluated: 240 },
     alerts: { open_alerts: 4, resolved_alerts: 28, total_alerts: 32 }
@@ -155,7 +155,7 @@ export default function PrincipalDashboard() {
             </h1>
             <p className="max-w-2xl text-caption text-white/80">
               Welcome, <span className="font-semibold text-white">{currentUser?.name || 'Dr. Chaitanya Kumar'}</span> (Principal & Director).
-              Real-time oversight across 4 engineering departments, {headcount.total_students} students, and predictive risk indicators.
+              Real-time oversight across {headcount.total_departments || departments.length || 14} academic departments & branches, {headcount.total_students} students, and predictive risk indicators.
             </p>
           </div>
 
@@ -505,7 +505,7 @@ export default function PrincipalDashboard() {
                   </CardDescription>
                 </div>
                 <span className="text-caption font-semibold text-muted dark:text-dark-muted">
-                  4 Active Departments
+                  {departments.length || headcount.total_departments || 14} Active Departments
                 </span>
               </div>
             </CardHeader>

@@ -19,12 +19,204 @@ import {
   Sparkles,
   ExternalLink,
   ChevronRight,
+  Search,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 
+const ACADEMIC_BRANCHES = [
+  // 10 Engineering Disciplines
+  {
+    code: 'CIV',
+    name: 'Civil Engineering',
+    category: 'engineering',
+    categoryLabel: 'Engineering Discipline',
+    borderColor: 'border-l-amber-600',
+    badgeColor: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
+    head: 'Dr. B. C. Udayashankar',
+    intake: '60 Seats',
+    labs: 'Structural Dynamics Lab, Geotechnical Eng Lab, CAD Center, Environmental Eng Lab',
+    description: 'Focusing on structural mechanics, transportation networks, environmental hydraulics, green architecture, surveying, and smart urban infrastructure planning.',
+  },
+  {
+    code: 'CSE',
+    name: 'Computer Science and Engineering',
+    category: 'engineering',
+    categoryLabel: 'Engineering Discipline',
+    borderColor: 'border-l-blue-600',
+    badgeColor: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+    head: 'Prof. Anita Rao',
+    intake: '180 Seats',
+    labs: 'High-Performance GPU Cluster, Cloud Systems Lab, Cyber Security Center, Open Source Hub',
+    description: 'Specializations in Machine Learning, Cloud Systems, Big Data, and Cyber Security. High-speed GPU computing infrastructure for student project development.',
+  },
+  {
+    code: 'EEE',
+    name: 'Electrical and Electronics Engineering',
+    category: 'engineering',
+    categoryLabel: 'Engineering Discipline',
+    borderColor: 'border-l-yellow-600',
+    badgeColor: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
+    head: 'Dr. H. N. Suresh',
+    intake: '60 Seats',
+    labs: 'Power Electronics Lab, Electric Drives Lab, Smart Grid & Renewable Energy Center',
+    description: 'Mastering electrical power generation, renewable solar/wind integration, power systems analysis, electric vehicle drives, and embedded industrial automation.',
+  },
+  {
+    code: 'ECE',
+    name: 'Electronics and Communications Engineering',
+    category: 'engineering',
+    categoryLabel: 'Engineering Discipline',
+    borderColor: 'border-l-indigo-600',
+    badgeColor: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300',
+    head: 'Dr. Geetha K',
+    intake: '120 Seats',
+    labs: 'VLSI Chip Design Center, Advanced DSP Lab, RF & Microwave Telemetry Lab, IoT Embedded Lab',
+    description: 'Advanced studies in VLSI semiconductor design, embedded microcontrollers, IoT sensor telemetry, wireless communications, and digital signal processing.',
+  },
+  {
+    code: 'ISE',
+    name: 'Information Science and Engineering',
+    category: 'engineering',
+    categoryLabel: 'Engineering Discipline',
+    borderColor: 'border-l-emerald-600',
+    badgeColor: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300',
+    head: 'Dr. Manjunath Swamy',
+    intake: '120 Seats',
+    labs: 'Enterprise Software Studio, Big Data Pipelines Lab, Modern DevOps Cloud Hub',
+    description: 'Focused on enterprise software systems, data engineering pipelines, distributed networks, cloud security protocols, and modern DevOps agile delivery practices.',
+  },
+  {
+    code: 'MECH',
+    name: 'Mechanical Engineering',
+    category: 'engineering',
+    categoryLabel: 'Engineering Discipline',
+    borderColor: 'border-l-red-600',
+    badgeColor: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+    head: 'Dr. K. S. Sridhar',
+    intake: '60 Seats',
+    labs: 'Robotics & Mechatronics Lab, CNC Precision Machining Lab, Thermal Engineering Center',
+    description: 'Encompassing CAD/CAM computer-aided engineering, robotics, thermal dynamics, additive 3D manufacturing, fluid mechanics, and sustainable automotive systems.',
+  },
+  {
+    code: 'AIML',
+    name: 'Artificial Intelligence and Machine Learning',
+    category: 'engineering',
+    categoryLabel: 'Engineering Discipline',
+    borderColor: 'border-l-violet-600',
+    badgeColor: 'bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300',
+    head: 'Dr. Chethan K R',
+    intake: '60 Seats',
+    labs: 'Deep Learning Vision Lab, Generative AI Studio, Autonomous Agents Sandbox',
+    description: 'Dedicated to neural networks, computer vision, natural language processing, LLMs, reinforcement learning, and ethical predictive AI system deployment.',
+  },
+  {
+    code: 'CE',
+    name: 'Computer Engineering',
+    category: 'engineering',
+    categoryLabel: 'Engineering Discipline',
+    borderColor: 'border-l-cyan-600',
+    badgeColor: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300',
+    head: 'Prof. Ramesh Kulkarni',
+    intake: '60 Seats',
+    labs: 'Hardware-Software Co-Design Lab, Real-Time Embedded Systems Lab, Edge Computing Lab',
+    description: 'Bridging computer hardware architecture, low-level firmware engineering, real-time operating systems, IoT edge devices, and FPGA circuit design.',
+  },
+  {
+    code: 'CSDS',
+    name: 'Computer Science and Engineering(Data Science)',
+    category: 'engineering',
+    categoryLabel: 'Engineering Discipline',
+    borderColor: 'border-l-teal-600',
+    badgeColor: 'bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300',
+    head: 'Dr. Pradeep N',
+    intake: '60 Seats',
+    labs: 'Big Data Hadoop/Spark Cluster, Business Intelligence Lab, Statistical Modeling Hub',
+    description: 'Specializing in massive dataset processing, predictive analytics, statistical hypothesis testing, data visualization, ETL workflows, and quantitative modeling.',
+  },
+  {
+    code: 'CSD',
+    name: 'Computer Science and Design',
+    category: 'engineering',
+    categoryLabel: 'Engineering Discipline',
+    borderColor: 'border-l-purple-600',
+    badgeColor: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+    head: 'Dr. Vinayaka B',
+    intake: '60 Seats',
+    labs: 'HCI Usability Lab, AR/VR Interactive Simulation Lab, Digital Media Production Studio',
+    description: 'Blending computational software engineering with human-computer interaction (HCI), UI/UX product design, interactive 3D graphics, and digital media technology.',
+  },
+
+  // 4 Basic Science and Humanities Departments
+  {
+    code: 'PHY',
+    name: 'Physics',
+    category: 'basic_science',
+    categoryLabel: 'Basic Science & Humanities',
+    borderColor: 'border-l-sky-600',
+    badgeColor: 'bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-300',
+    head: 'Dr. M. S. Giridhar',
+    intake: 'All 1st Year Streams',
+    labs: 'Engineering Physics Lab, Optics & Laser Research Lab, Nanotechnology Studio',
+    description: 'Foundational and applied physics covering semiconductor physics, lasers, quantum mechanics, electromagnetism, and advanced nanotechnology materials.',
+  },
+  {
+    code: 'MATH',
+    name: 'Mathematics',
+    category: 'basic_science',
+    categoryLabel: 'Basic Science & Humanities',
+    borderColor: 'border-l-pink-600',
+    badgeColor: 'bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300',
+    head: 'Dr. S. K. Narayana',
+    intake: 'All 1st & 2nd Year Streams',
+    labs: 'Computational Mathematics Lab, Numerical Analysis Center, MATLAB & SageMath Studio',
+    description: 'Providing rigorous mathematical foundations in multivariable calculus, linear algebra, discrete mathematics, complex variables, and stochastic probability modeling.',
+  },
+  {
+    code: 'CHEM',
+    name: 'Chemistry',
+    category: 'basic_science',
+    categoryLabel: 'Basic Science & Humanities',
+    borderColor: 'border-l-lime-600',
+    badgeColor: 'bg-lime-100 text-lime-800 dark:bg-lime-900/30 dark:text-lime-300',
+    head: 'Dr. B. K. Shanthala',
+    intake: 'All 1st Year Streams',
+    labs: 'Engineering Chemistry Lab, Instrumental Analysis Center, Corrosion & Battery Research Lab',
+    description: 'Engineering chemistry focusing on polymer materials, electrochemical energy storage, water purification, smart coatings, and battery cell nanotechnology.',
+  },
+  {
+    code: 'HUM',
+    name: 'Humanities',
+    category: 'basic_science',
+    categoryLabel: 'Basic Science & Humanities',
+    borderColor: 'border-l-rose-600',
+    badgeColor: 'bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-300',
+    head: 'Prof. Sandhya Rani',
+    intake: 'All Undergraduate Semesters',
+    labs: 'Digital Language Lab, Professional Phonetics Studio, Communication Skills Center',
+    description: 'Nurturing communicative English, Samskrutika/Balake Kannada, Constitution of India, Universal Human Values, and professional engineering ethics.',
+  },
+];
+
 export default function Landing() {
   const navigate = useNavigate();
+
+  // Branch filter & search state
+  const [deptTab, setDeptTab] = useState('all'); // 'all' | 'engineering' | 'basic_science'
+  const [deptSearch, setDeptSearch] = useState('');
+
+  const filteredBranches = ACADEMIC_BRANCHES.filter((b) => {
+    const matchesTab =
+      deptTab === 'all' ||
+      (deptTab === 'engineering' && b.category === 'engineering') ||
+      (deptTab === 'basic_science' && b.category === 'basic_science');
+    const matchesSearch =
+      deptSearch.trim() === '' ||
+      b.name.toLowerCase().includes(deptSearch.toLowerCase()) ||
+      b.code.toLowerCase().includes(deptSearch.toLowerCase()) ||
+      b.head.toLowerCase().includes(deptSearch.toLowerCase());
+    return matchesTab && matchesSearch;
+  });
 
   // Contact form state
   const [contactForm, setContactForm] = useState({
@@ -328,90 +520,119 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Departments Section */}
+      {/* Academic Departments & Branches Section */}
       <section id="departments" className="py-16 px-6 border-b border-line bg-surface dark:border-dark-line dark:bg-dark-surface">
         <div className="mx-auto max-w-7xl">
-          <div className="max-w-2xl">
-            <span className="font-heading text-caption font-semibold uppercase tracking-wider text-accent">
-              Academic Departments
-            </span>
-            <h2 className="mt-2 font-heading text-3xl font-bold text-ink dark:text-dark-text">
-              Engineering Disciplines &amp; Laboratories
-            </h2>
-            <p className="mt-3 text-body text-muted dark:text-dark-muted leading-relaxed">
-              Equipped with modern computing clusters, IoT embedded kits, and specialized domain faculty.
-            </p>
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+            <div className="max-w-2xl">
+              <span className="font-heading text-caption font-semibold uppercase tracking-wider text-accent">
+                Academic Programs &amp; Faculty
+              </span>
+              <h2 className="mt-2 font-heading text-3xl font-bold text-ink dark:text-dark-text">
+                Academic Departments &amp; Branches
+              </h2>
+              <p className="mt-3 text-body text-muted dark:text-dark-muted leading-relaxed">
+                PESITM hosts 10 accredited undergraduate engineering streams and 4 foundational basic science &amp; humanities departments, all equipped with advanced laboratories, computing clusters, and industry research centers.
+              </p>
+            </div>
+
+            {/* Filter Tabs & Search */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
+                <input
+                  type="text"
+                  placeholder="Filter branch..."
+                  value={deptSearch}
+                  onChange={(e) => setDeptSearch(e.target.value)}
+                  className="w-full sm:w-48 pl-9 pr-3 py-1.5 text-caption rounded-input border border-line bg-page text-ink placeholder:text-muted focus:border-accent focus:outline-none dark:border-dark-line dark:bg-dark-page dark:text-dark-text"
+                />
+              </div>
+
+              <div className="inline-flex rounded-input border border-line bg-page p-1 dark:border-dark-line dark:bg-dark-page">
+                <button
+                  type="button"
+                  onClick={() => setDeptTab('all')}
+                  className={`px-3 py-1 text-[12px] font-medium rounded transition ${
+                    deptTab === 'all'
+                      ? 'bg-accent text-white shadow-sm'
+                      : 'text-muted hover:text-ink dark:hover:text-dark-text'
+                  }`}
+                >
+                  All (14)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDeptTab('engineering')}
+                  className={`px-3 py-1 text-[12px] font-medium rounded transition ${
+                    deptTab === 'engineering'
+                      ? 'bg-accent text-white shadow-sm'
+                      : 'text-muted hover:text-ink dark:hover:text-dark-text'
+                  }`}
+                >
+                  Engineering (10)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDeptTab('basic_science')}
+                  className={`px-3 py-1 text-[12px] font-medium rounded transition ${
+                    deptTab === 'basic_science'
+                      ? 'bg-accent text-white shadow-sm'
+                      : 'text-muted hover:text-ink dark:hover:text-dark-text'
+                  }`}
+                >
+                  Sciences &amp; Humanities (4)
+                </button>
+              </div>
+            </div>
           </div>
 
-          <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card className="border-l-4 border-l-blue-600">
-              <div className="flex justify-between items-start">
+          {/* Branches Grid */}
+          <div className="mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredBranches.map((dept) => (
+              <Card key={dept.code} className={`border-l-4 ${dept.borderColor} flex flex-col justify-between hover:shadow-md transition`}>
                 <div>
-                  <span className="rounded-pill bg-blue-100 px-2.5 py-0.5 text-[11px] font-semibold text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
-                    Dept Code: CSE
-                  </span>
-                  <h3 className="mt-2 font-heading text-xl font-bold text-ink dark:text-dark-text">
-                    Computer Science &amp; Engineering
-                  </h3>
-                </div>
-                <span className="text-caption text-muted font-medium">Head: Prof. Anita Rao</span>
-              </div>
-              <p className="mt-3 text-caption text-muted dark:text-dark-muted leading-relaxed">
-                Specializations in Machine Learning, Cloud Systems, Big Data, and Cyber Security. High-speed GPU computing infrastructure for student project development.
-              </p>
-            </Card>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className={`rounded-pill px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider ${dept.badgeColor}`}>
+                      {dept.code}
+                    </span>
+                    <span className="text-[11px] font-medium text-muted dark:text-dark-muted">
+                      {dept.categoryLabel}
+                    </span>
+                  </div>
 
-            <Card className="border-l-4 border-l-purple-600">
-              <div className="flex justify-between items-start">
-                <div>
-                  <span className="rounded-pill bg-purple-100 px-2.5 py-0.5 text-[11px] font-semibold text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
-                    Dept Code: CSD
-                  </span>
-                  <h3 className="mt-2 font-heading text-xl font-bold text-ink dark:text-dark-text">
-                    Computer Science &amp; Design
+                  <h3 className="mt-3 font-heading text-lg font-bold text-ink dark:text-dark-text leading-snug">
+                    {dept.name}
                   </h3>
-                </div>
-                <span className="text-caption text-muted font-medium">Head: Dr. Vinayaka B</span>
-              </div>
-              <p className="mt-3 text-caption text-muted dark:text-dark-muted leading-relaxed">
-                Blending computational software engineering with human-computer interaction (HCI), UI/UX product design, interactive 3D graphics, and digital media technology.
-              </p>
-            </Card>
 
-            <Card className="border-l-4 border-l-emerald-600">
-              <div className="flex justify-between items-start">
-                <div>
-                  <span className="rounded-pill bg-emerald-100 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300">
-                    Dept Code: ISE
-                  </span>
-                  <h3 className="mt-2 font-heading text-xl font-bold text-ink dark:text-dark-text">
-                    Information Science &amp; Engineering
-                  </h3>
+                  <p className="mt-2 text-caption text-muted dark:text-dark-muted leading-relaxed line-clamp-3">
+                    {dept.description}
+                  </p>
                 </div>
-                <span className="text-caption text-muted font-medium">Head: Dr. Manjunath Swamy</span>
-              </div>
-              <p className="mt-3 text-caption text-muted dark:text-dark-muted leading-relaxed">
-                Focused on enterprise software systems, data engineering pipelines, distributed networks, and modern DevOps agile delivery practices.
-              </p>
-            </Card>
 
-            <Card className="border-l-4 border-l-amber-600">
-              <div className="flex justify-between items-start">
-                <div>
-                  <span className="rounded-pill bg-amber-100 px-2.5 py-0.5 text-[11px] font-semibold text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
-                    Dept Code: ECE
-                  </span>
-                  <h3 className="mt-2 font-heading text-xl font-bold text-ink dark:text-dark-text">
-                    Electronics &amp; Communication
-                  </h3>
+                <div className="mt-4 pt-3 border-t border-line/60 dark:border-dark-line/60 space-y-1.5 text-[11px]">
+                  <div className="flex justify-between items-center text-muted">
+                    <span className="font-medium text-ink dark:text-dark-text">HoD:</span>
+                    <span>{dept.head}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-muted">
+                    <span className="font-medium text-ink dark:text-dark-text">Intake:</span>
+                    <span>{dept.intake}</span>
+                  </div>
+                  <div className="text-muted line-clamp-1">
+                    <span className="font-medium text-ink dark:text-dark-text">Labs: </span>
+                    <span>{dept.labs}</span>
+                  </div>
                 </div>
-                <span className="text-caption text-muted font-medium">Head: Dr. Geetha K</span>
-              </div>
-              <p className="mt-3 text-caption text-muted dark:text-dark-muted leading-relaxed">
-                Advanced studies in VLSI semiconductor design, embedded microcontrollers, IoT sensor telemetry, wireless communications, and signal processing.
-              </p>
-            </Card>
+              </Card>
+            ))}
           </div>
+
+          {filteredBranches.length === 0 && (
+            <div className="mt-8 rounded-card border border-dashed border-line p-8 text-center text-muted dark:border-dark-line">
+              No academic departments matched your filter query "{deptSearch}".
+            </div>
+          )}
         </div>
       </section>
 

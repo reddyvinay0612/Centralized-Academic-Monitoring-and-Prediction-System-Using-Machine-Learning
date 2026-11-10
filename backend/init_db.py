@@ -36,14 +36,34 @@ def initialize_database(reset=False):
         print("[*] Seeding benchmark institutional dataset for PESITM Shivamogga...")
 
         # --------------------------------------------------------------------------
-        # 1. DEPARTMENTS
+        # 1. DEPARTMENTS (10 Engineering Branches + 4 Basic Science & Humanities)
         # --------------------------------------------------------------------------
-        dept_cse = Department(dept_id=1, dept_code='CSE', name='Computer Science & Engineering')
-        dept_ise = Department(dept_id=2, dept_code='ISE', name='Information Science & Engineering')
-        dept_ece = Department(dept_id=3, dept_code='ECE', name='Electronics & Communication Engineering')
-        dept_csd = Department(dept_id=4, dept_code='CSD', name='Computer Science & Design')
-        db.session.add_all([dept_cse, dept_ise, dept_ece, dept_csd])
+        all_depts_data = [
+            (1, 'CSE', 'Computer Science and Engineering'),
+            (2, 'ISE', 'Information Science and Engineering'),
+            (3, 'ECE', 'Electronics and Communications Engineering'),
+            (4, 'CSD', 'Computer Science and Design'),
+            (5, 'CIV', 'Civil Engineering'),
+            (6, 'EEE', 'Electrical and Electronics Engineering'),
+            (7, 'MECH', 'Mechanical Engineering'),
+            (8, 'AIML', 'Artificial Intelligence and Machine Learning'),
+            (9, 'CE', 'Computer Engineering'),
+            (10, 'CSDS', 'Computer Science and Engineering(Data Science)'),
+            (11, 'PHY', 'Physics'),
+            (12, 'MATH', 'Mathematics'),
+            (13, 'CHEM', 'Chemistry'),
+            (14, 'HUM', 'Humanities'),
+        ]
+        created_depts = []
+        for did, dcode, dname in all_depts_data:
+            created_depts.append(Department(dept_id=did, dept_code=dcode, name=dname))
+        db.session.add_all(created_depts)
         db.session.flush()
+
+        dept_cse = created_depts[0]
+        dept_ise = created_depts[1]
+        dept_ece = created_depts[2]
+        dept_csd = created_depts[3]
 
         # --------------------------------------------------------------------------
         # 2. EXECUTIVE USERS (Principal & Admin)
