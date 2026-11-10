@@ -101,7 +101,7 @@ def login():
     Payload: { "identifier": "...", "password": "...", "expectedRole": "..." }
     """
     data = request.get_json() or {}
-    identifier = data.get('identifier', '').strip()
+    identifier = data.get('identifier', '').strip() or data.get('username', '').strip() or data.get('email', '').strip()
     password = data.get('password', '')
     expected_role = data.get('expectedRole', '').strip().lower()
     client_ip = request.remote_addr

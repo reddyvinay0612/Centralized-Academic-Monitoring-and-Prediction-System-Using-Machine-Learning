@@ -60,8 +60,8 @@ import shap
 
 # Directories
 BASE_DIR = Path(__file__).resolve().parent.parent
+REAL_PESITM_DATA_PATH = BASE_DIR / "data" / "processed" / "pesitm_real_marks_dataset.csv"
 SYNTHETIC_DATA_PATH = BASE_DIR / "data" / "synthetic" / "indian_college_student_data.csv"
-BATCH_DIR = BASE_DIR / "data" / "23-27-Batch"
 MODEL_DIR = BASE_DIR / "ml_engine" / "saved_models"
 OUTPUT_DIR = BASE_DIR / "reports_output"
 
@@ -73,40 +73,35 @@ def load_dataset():
     """
     Constructs a comprehensive dataset combining past IA marks, past semester results,
     and attendance records, engineering key academic indicators for Pass/Fail prediction.
+    Prioritizes real PESITM college marks dataset if present.
     """
-    print("[*] Loading academic records for Pass/Fail prediction model...")
-    df = pd.read_csv(SYNTHETIC_DATA_PATH)
+    if REAL_PESITM_DATA_PATH.exists():
+        print(f"[*] Loading authentic PESITM college marks dataset: {REAL_PESITM_DATA_PATH}")
+        df = pd.read_csv(REAL_PESITM_DATA_PATH)
+    else:
+        print(f"[*] Loading synthetic marks dataset: {SYNTHETIC_DATA_PATH}")
+        df = pd.read_csv(SYNTHETIC_DATA_PATH)
 
-    # 1. Feature Engineering: Past IA Marks measures
-    df["IA_Average"] = (df["CIE_IA1"] + df["CIE_IA2"] + df["CIE_IA3"]) / 3.0
-    # IA Trend: Positive means student is improving; Negative means deteriorating
-    df["IA_Trend"] = df["CIE_IA3"] - df["CIE_IA1"]
-    # VTU CIE Requirement: Minimum 20/50 (40%) to be eligible to sit for exams
-    df["CIE_Deficiency"] = (df["Total_CIE"] < 20.0).astype(int)
+        # 1. Feature Engineering: Past IA Marks measures
+        df["IA_Average"] = (df["CIE_IA1"] + df["CIE_IA2"] + df["CIE_IA3"]) / 3.0
+        df["IA_Trend"] = df["CIE_IA3"] - df["CIE_IA1"]
+        df["CIE_Deficiency"] = (df["Total_CIE"] < 20.0).astype(int)
 
-    # 2. Feature Engineering: Past Semester Results measures
-    # Semester SGPA Trend: Compares Sem 4 to Sem 1 performance
-    df["SGPA_Trend"] = df["Sem4_SGPA"] - df["Sem1_SGPA"]
-    # Historical semester average
-    df["Past_Sem_Avg"] = (df["Sem1_SGPA"] + df["Sem2_SGPA"] + df["Sem3_SGPA"] + df["Sem4_SGPA"]) / 4.0
+        # 2. Feature Engineering: Past Semester Results measures
+        df["SGPA_Trend"] = df["Sem4_SGPA"] - df["Sem1_SGPA"]
+        df["Past_Sem_Avg"] = (df["Sem1_SGPA"] + df["Sem2_SGPA"] + df["Sem3_SGPA"] + df["Sem4_SGPA"]) / 4.0
 
-    # 3. Regulatory Indicators (VTU Regulations)
-    # VTU Attendance Requirement: Minimum 75% attendance
-    df["Attendance_Shortage"] = (df["Attendance_Percentage"] < 75.0).astype(int)
+        # 3. Regulatory Indicators (VTU Regulations)
+        df["Attendance_Shortage"] = (df["Attendance_Percentage"] < 75.0).astype(int)
 
-    # 4. Target Variable: PASS (1) or FAIL (0) in Further Examination
-    # A student is predicted to FAIL if:
-    #   - Next SGPA falls below passing threshold (< 5.0), OR
-    #   - Has multiple active backlogs and high risk, OR
-    #   - CIE deficiency (< 20 marks) or severe attendance shortage (< 65%)
-    fail_condition = (
-        (df["Target_Next_SGPA"] < 5.0) |
-        (df["Target_Risk"] == "High") |
-        ((df["Active_Backlogs"] >= 2) & (df["Total_CIE"] < 25)) |
-        (df["Attendance_Percentage"] < 65.0)
-    )
-
-    df["Pass_Fail_Target"] = np.where(fail_condition, 0, 1)
+        # 4. Target Variable: PASS (1) or FAIL (0) in Further Examination
+        fail_condition = (
+            (df["Target_Next_SGPA"] < 5.0) |
+            (df["Target_Risk"] == "High") |
+            ((df["Active_Backlogs"] >= 2) & (df["Total_CIE"] < 25)) |
+            (df["Attendance_Percentage"] < 65.0)
+        )
+        df["Pass_Fail_Target"] = np.where(fail_condition, 0, 1)
 
     # Feature List
     feature_cols = [

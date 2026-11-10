@@ -79,7 +79,7 @@ export default function PrincipalDashboard() {
   const loadStudents = async () => {
     setStudentsLoading(true);
     try {
-      const params = { limit: 100 };
+      const params = { limit: 1000 };
       if (studentRiskFilter !== 'all') params.risk_level = studentRiskFilter;
       if (studentSearch.trim()) params.search = studentSearch.trim();
 

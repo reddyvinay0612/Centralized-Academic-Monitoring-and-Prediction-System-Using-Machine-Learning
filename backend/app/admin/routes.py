@@ -85,7 +85,7 @@ def list_users():
     role = request.args.get('role')
     search = request.args.get('search', '').strip()
     page = request.args.get('page', 1, type=int)
-    limit = request.args.get('limit', 50, type=int)
+    limit = request.args.get('limit', 1000, type=int)
 
     query = User.query
 
@@ -565,7 +565,7 @@ def get_audit_logs():
     """
     Retrieve security audit trail events.
     """
-    limit = request.args.get('limit', 50, type=int)
+    limit = request.args.get('limit', 1000, type=int)
     action = request.args.get('action')
 
     query = AuditLog.query

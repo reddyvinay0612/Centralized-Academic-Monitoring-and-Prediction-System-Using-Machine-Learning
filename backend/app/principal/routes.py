@@ -239,7 +239,7 @@ def get_college_students():
     class_id = request.args.get('class_id', type=int)
     risk_level = request.args.get('risk_level')
     search = request.args.get('search', '').strip()
-    limit = request.args.get('limit', 100, type=int)
+    limit = request.args.get('limit', 1000, type=int)
 
     query = Student.query
     if class_id:
