@@ -28,7 +28,7 @@ class Config:
     # Database Configuration (MySQL with automatic fallback to local SQLite for seamless setup)
     DB_USER = os.environ.get('DB_USER', 'root')
     DB_PASSWORD = os.environ.get('DB_PASSWORD', '')
-    DB_HOST = os.environ.get('DB_HOST', 'localhost')
+    DB_HOST = os.environ.get('DB_HOST', '127.0.0.1')
     DB_PORT = os.environ.get('DB_PORT', '3306')
     DB_NAME = os.environ.get('DB_NAME', 'camps_db')
     
@@ -53,11 +53,11 @@ class Config:
             from urllib.parse import urlparse
             _p = urlparse(_target_mysql_uri)
             _c = pymysql.connect(
-                host=_p.hostname or 'localhost',
+                host='127.0.0.1' if not _p.hostname or _p.hostname == 'localhost' else _p.hostname,
                 user=_p.username or 'root',
                 password=_p.password or '',
                 port=_p.port or 3306,
-                connect_timeout=2
+                connect_timeout=3
             )
             _c.close()
             _mysql_connected = True

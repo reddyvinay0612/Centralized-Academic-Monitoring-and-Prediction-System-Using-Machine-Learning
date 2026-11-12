@@ -33,8 +33,8 @@ const ROLE_CONFIGS = {
     badgeClass: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300',
     iconBg: 'bg-emerald-500/10 text-emerald-600',
     identifierLabel: 'University Seat Number (USN)',
-    identifierPlaceholder: 'e.g. 4PM21CS001',
-    demoCredential: { identifier: '4PM21CS001', password: 'password123', label: 'Rohan Verma (4PM21CS001)' },
+    identifierPlaceholder: 'e.g. 4PM23CS071 or 4PM22CS001',
+    demoCredential: { identifier: '4PM23CS071', password: 'password123', label: 'PAVAN KUMAR (4PM23CS071)' },
     redirectDefault: '/student/dashboard',
   },
   parent: {
@@ -45,9 +45,9 @@ const ROLE_CONFIGS = {
     badgeText: 'Parent Access',
     badgeClass: 'bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300',
     iconBg: 'bg-amber-500/10 text-amber-600',
-    identifierLabel: 'Registered Mobile Number or Email',
-    identifierPlaceholder: 'e.g. +91 98800 20001 or parent@gmail.com',
-    demoCredential: { identifier: '+91 98800 20001', password: 'password123', label: 'Parent of Rohan Verma' },
+    identifierLabel: 'Registered USN or Parent Username',
+    identifierPlaceholder: 'e.g. parent_4pm23cs071 or 4PM23CS071',
+    demoCredential: { identifier: 'parent_4pm23cs071', password: 'password123', label: 'Parent of PAVAN KUMAR (4PM23CS071)' },
     redirectDefault: '/parent/dashboard',
   },
   teacher: {
@@ -243,6 +243,10 @@ export default function RoleLogin({ role = 'student' }) {
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
+              <p className="mt-1.5 text-[11px] text-muted dark:text-dark-muted flex items-center justify-between">
+                <span>Default password for all accounts:</span>
+                <span className="font-mono font-semibold text-accent bg-accent/10 px-1.5 py-0.5 rounded">password123</span>
+              </p>
             </div>
 
             <Button

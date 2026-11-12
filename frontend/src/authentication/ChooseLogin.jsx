@@ -23,7 +23,7 @@ const PORTALS = [
     badgeColor: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300',
     iconBg: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
     description: 'Access individual subject attendance, CIE test marks, semester results, and study resources.',
-    credentialsTip: 'Sign in with your University Seat Number (USN).',
+    credentialsTip: 'Sign in with your USN (e.g. 4PM23CS071). Default password: password123',
   },
   {
     id: 'parent',
@@ -34,7 +34,7 @@ const PORTALS = [
     badgeColor: 'bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300',
     iconBg: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
     description: "Monitor child's academic trajectory, attendance shortage alerts, and communicate with mentors.",
-    credentialsTip: 'Sign in with registered mobile number or email.',
+    credentialsTip: 'Sign in with child USN or parent_usn (e.g. parent_4pm23cs071). Password: password123',
   },
   {
     id: 'teacher',
@@ -45,7 +45,7 @@ const PORTALS = [
     badgeColor: 'bg-blue-100 text-blue-800 dark:bg-blue-950/40 dark:text-blue-300',
     iconBg: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
     description: 'Manage assigned classes, record attendance, enter CIE marks, and dispatch parent notices.',
-    credentialsTip: 'Sign in with Employee ID or institutional email.',
+    credentialsTip: 'Sign in with faculty ID (e.g. anita.rao). Password: password123',
   },
   {
     id: 'admin',
@@ -56,7 +56,7 @@ const PORTALS = [
     badgeColor: 'bg-purple-100 text-purple-800 dark:bg-purple-950/40 dark:text-purple-300',
     iconBg: 'bg-purple-500/10 text-purple-600 dark:text-purple-400',
     description: 'Manage user credentials, department structures, class allocations, and audit system events.',
-    credentialsTip: 'Sign in with administrator email and 2FA OTP.',
+    credentialsTip: 'Sign in with administrator ID (admin). Password: password123',
   },
   {
     id: 'principal',
@@ -67,7 +67,7 @@ const PORTALS = [
     badgeColor: 'bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300',
     iconBg: 'bg-rose-500/10 text-rose-600 dark:text-rose-400',
     description: 'Institution-wide academic monitoring, department comparisons, and executive college reports.',
-    credentialsTip: 'Sign in with executive administrative credentials.',
+    credentialsTip: 'Sign in with executive ID (principal). Password: password123',
   },
 ];
 
