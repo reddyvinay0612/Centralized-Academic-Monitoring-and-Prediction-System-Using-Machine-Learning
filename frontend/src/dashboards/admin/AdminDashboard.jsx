@@ -16,6 +16,7 @@ import {
   Trash2,
   Plus,
   Sliders,
+  Sparkles,
   Activity,
   Layers,
   GraduationCap
@@ -101,9 +102,8 @@ export default function AdminDashboard() {
     try {
       const statsData = await adminService.getStats();
       setStats(statsData);
-      await loadUsers();
     } catch (err) {
-      toast.error('Could not load administrative stats.');
+      console.warn('Could not load administrative stats:', err);
     } finally {
       setLoading(false);
     }
@@ -116,9 +116,10 @@ export default function AdminDashboard() {
       if (userRoleFilter !== 'all') params.role = userRoleFilter;
       if (userSearch) params.search = userSearch;
       const res = await adminService.getUsers(params);
-      setUsers(res.data || []);
+      setUsers(Array.isArray(res?.data) ? res.data : []);
     } catch (err) {
-      toast.error('Failed to load user accounts.');
+      console.error('Failed to load user accounts:', err);
+      setUsers([]);
     } finally {
       setUsersLoading(false);
     }

@@ -5,6 +5,7 @@ import {
   Users,
   Clock,
   Sparkles,
+  Sliders,
   AlertTriangle,
   CheckCircle2,
   Search,

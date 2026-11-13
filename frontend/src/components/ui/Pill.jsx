@@ -1,10 +1,11 @@
 import React from 'react';
 import { getRiskBadgeClasses, getRiskLabel } from '@/utils/risk';
 
-export function Pill({ level, label, variant = 'risk', className = '' }) {
+export function Pill({ level, label, variant = 'risk', className = '', children }) {
+  const textLabel = label || children || (variant === 'risk' ? getRiskLabel(level) : '');
+
   if (variant === 'risk') {
     const badgeStyle = getRiskBadgeClasses(level);
-    const textLabel = label || getRiskLabel(level);
 
     return (
       <span
@@ -27,7 +28,7 @@ export function Pill({ level, label, variant = 'risk', className = '' }) {
     <span
       className={`inline-flex items-center rounded-pill bg-page px-2.5 py-0.5 text-caption font-medium text-muted dark:bg-dark-page dark:text-dark-muted ${className}`}
     >
-      {label}
+      {textLabel}
     </span>
   );
 }

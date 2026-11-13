@@ -13,6 +13,7 @@ import {
   Mail,
   User,
   Sparkles,
+  Sliders,
   Download,
   Calendar,
   MessageSquare,

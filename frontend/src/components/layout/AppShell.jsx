@@ -17,6 +17,7 @@ import { ROUTES } from '@/utils/constants';
 import { useAuth } from '@/context/AuthContext';
 import NotificationCenter from '@/components/notifications/NotificationCenter';
 import notificationService from '@/services/notificationService';
+import ErrorBoundary from '@/components/common/ErrorBoundary';
 
 const getRoleConfig = (role) => {
   switch (role) {
@@ -249,7 +250,9 @@ export default function AppShell() {
 
       {/* Main App Content */}
       <main className="mx-auto w-full max-w-7xl flex-1 p-4 md:p-6">
-        <Outlet />
+        <ErrorBoundary>
+          <Outlet />
+        </ErrorBoundary>
       </main>
 
       {/* Institution Footer */}
