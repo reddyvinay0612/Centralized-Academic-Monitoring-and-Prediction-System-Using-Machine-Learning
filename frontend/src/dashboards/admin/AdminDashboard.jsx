@@ -242,12 +242,28 @@ export default function AdminDashboard() {
   const handleCreateClass = async (e) => {
     e.preventDefault();
     try {
-      await adminService.createClass(createClassForm);
-      toast.success('Class division created.');
+      const payload = {
+        class_name: (createClassForm.class_name || '').trim(),
+        section: (createClassForm.section || 'A').trim().toUpperCase(),
+        semester: parseInt(createClassForm.semester) || 1,
+        academic_year: createClassForm.academic_year || '2024-25',
+        dept_id: parseInt(createClassForm.dept_id) || (departments[0]?.dept_id || 1),
+        mentor_teacher_id: createClassForm.mentor_teacher_id ? parseInt(createClassForm.mentor_teacher_id) : null
+      };
+      const res = await adminService.createClass(payload);
+      toast.success(res?.message || 'Class division created successfully.');
       setIsCreateClassOpen(false);
+      setCreateClassForm({
+        class_name: '',
+        section: 'A',
+        semester: 5,
+        academic_year: '2024-25',
+        dept_id: departments[0]?.dept_id || 1,
+        mentor_teacher_id: ''
+      });
       await loadAcademics();
     } catch (err) {
-      toast.error('Failed to create class.');
+      toast.error(err.response?.data?.message || 'Failed to create class.');
     }
   };
 
@@ -955,7 +971,7 @@ export default function AdminDashboard() {
                   required
                   value={createClassForm.class_name}
                   onChange={(e) => setCreateClassForm({ ...createClassForm, class_name: e.target.value })}
-                  placeholder="e.g. 5th Sem CSE"
+                  placeholder="e.g. 6th Sem CSE or 6th"
                   className="mt-1 w-full rounded-input border border-line bg-surface px-3 py-1.5 text-caption dark:border-dark-line dark:bg-dark-surface dark:text-dark-text"
                 />
               </div>
@@ -987,8 +1003,38 @@ export default function AdminDashboard() {
                   type="text"
                   value={createClassForm.academic_year}
                   onChange={(e) => setCreateClassForm({ ...createClassForm, academic_year: e.target.value })}
+                  placeholder="e.g. 2024-25"
                   className="mt-1 w-full rounded-input border border-line bg-surface px-3 py-1.5 text-caption dark:border-dark-line dark:bg-dark-surface dark:text-dark-text"
                 />
+              </div>
+              <div>
+                <label className="block text-caption font-semibold text-muted">Department *</label>
+                <select
+                  value={createClassForm.dept_id}
+                  onChange={(e) => setCreateClassForm({ ...createClassForm, dept_id: parseInt(e.target.value) })}
+                  className="mt-1 w-full rounded-input border border-line bg-surface px-3 py-1.5 text-caption dark:border-dark-line dark:bg-dark-surface dark:text-dark-text"
+                >
+                  {departments.map((d) => (
+                    <option key={d.dept_id} value={d.dept_id}>
+                      {d.name} ({d.dept_code})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-caption font-semibold text-muted">Faculty Mentor (Optional)</label>
+                <select
+                  value={createClassForm.mentor_teacher_id || ''}
+                  onChange={(e) => setCreateClassForm({ ...createClassForm, mentor_teacher_id: e.target.value })}
+                  className="mt-1 w-full rounded-input border border-line bg-surface px-3 py-1.5 text-caption dark:border-dark-line dark:bg-dark-surface dark:text-dark-text"
+                >
+                  <option value="">-- No Mentor Assigned --</option>
+                  {users.filter(u => u.role === 'teacher' || u.role === 'hod').map((t) => (
+                    <option key={t.user_id} value={t.user_id}>
+                      {t.profile_name || t.username} ({t.employee_id || 'Faculty'})
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
             <div className="flex justify-end gap-2 pt-2">

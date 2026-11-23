@@ -395,13 +395,39 @@ def create_class():
     payload = request.get_json() or {}
     class_name = payload.get('class_name', '').strip()
     section = payload.get('section', 'A').strip().upper()
-    semester = payload.get('semester', 1)
+    try:
+        semester = int(payload.get('semester', 1))
+    except (ValueError, TypeError):
+        semester = 1
     academic_year = payload.get('academic_year', '2024-25').strip()
-    dept_id = payload.get('dept_id')
-    mentor_teacher_id = payload.get('mentor_teacher_id')
 
-    if not class_name or not dept_id:
-        return jsonify({'success': False, 'error': 'BAD_REQUEST', 'message': 'class_name and dept_id are required.'}), 400
+    # Sanitize and validate dept_id
+    raw_dept_id = payload.get('dept_id')
+    if not raw_dept_id or str(raw_dept_id).strip() == '':
+        first_dept = Department.query.first()
+        dept_id = first_dept.dept_id if first_dept else 1
+    else:
+        try:
+            dept_id = int(raw_dept_id)
+        except (ValueError, TypeError):
+            first_dept = Department.query.first()
+            dept_id = first_dept.dept_id if first_dept else 1
+
+    # Sanitize mentor_teacher_id (convert empty string or 0 to None)
+    raw_mentor = payload.get('mentor_teacher_id')
+    mentor_teacher_id = None
+    if raw_mentor and str(raw_mentor).strip() not in ('', '0', 'None', 'null'):
+        try:
+            val = int(raw_mentor)
+            # Verify teacher exists
+            t = db.session.get(Teacher, val)
+            if t:
+                mentor_teacher_id = val
+        except (ValueError, TypeError):
+            mentor_teacher_id = None
+
+    if not class_name:
+        return jsonify({'success': False, 'error': 'BAD_REQUEST', 'message': 'Class Name is required.'}), 400
 
     new_class = Class(
         class_name=class_name,
@@ -412,9 +438,21 @@ def create_class():
         mentor_teacher_id=mentor_teacher_id
     )
     db.session.add(new_class)
+    db.session.flush()
+
+    # System audit log
+    audit = AuditLog(
+        user_id=request.current_user.user_id,
+        role=request.current_user.role,
+        action='CLASS_CREATED',
+        target_type='Class',
+        target_id=new_class.class_id,
+        ip=request.remote_addr
+    )
+    db.session.add(audit)
     db.session.commit()
 
-    return jsonify({'success': True, 'message': 'Class created successfully.', 'data': new_class.to_dict()}), 201
+    return jsonify({'success': True, 'message': f'Class division "{class_name} ({section})" created successfully.', 'data': new_class.to_dict()}), 201
 
 
 @admin_bp.route('/subjects', methods=['GET'])
@@ -455,12 +493,28 @@ def create_subject():
     payload = request.get_json() or {}
     code = payload.get('subject_code', '').strip().upper()
     name = payload.get('subject_name', '').strip()
-    semester = payload.get('semester', 1)
-    credits = payload.get('credits', 3)
-    dept_id = payload.get('dept_id')
+    try:
+        semester = int(payload.get('semester', 1))
+    except (ValueError, TypeError):
+        semester = 1
+    try:
+        credits = int(payload.get('credits', 3))
+    except (ValueError, TypeError):
+        credits = 3
 
-    if not code or not name or not dept_id:
-        return jsonify({'success': False, 'error': 'BAD_REQUEST', 'message': 'subject_code, subject_name, dept_id are required.'}), 400
+    raw_dept_id = payload.get('dept_id')
+    if not raw_dept_id or str(raw_dept_id).strip() == '':
+        first_dept = Department.query.first()
+        dept_id = first_dept.dept_id if first_dept else 1
+    else:
+        try:
+            dept_id = int(raw_dept_id)
+        except (ValueError, TypeError):
+            first_dept = Department.query.first()
+            dept_id = first_dept.dept_id if first_dept else 1
+
+    if not code or not name:
+        return jsonify({'success': False, 'error': 'BAD_REQUEST', 'message': 'Subject Code and Subject Name are required.'}), 400
 
     subj = Subject(
         subject_code=code,
@@ -470,9 +524,21 @@ def create_subject():
         dept_id=dept_id
     )
     db.session.add(subj)
+    db.session.flush()
+
+    # System audit log
+    audit = AuditLog(
+        user_id=request.current_user.user_id,
+        role=request.current_user.role,
+        action='SUBJECT_CREATED',
+        target_type='Subject',
+        target_id=subj.subject_id,
+        ip=request.remote_addr
+    )
+    db.session.add(audit)
     db.session.commit()
 
-    return jsonify({'success': True, 'message': 'Subject created.', 'data': subj.to_dict()}), 201
+    return jsonify({'success': True, 'message': f'Subject "{code} - {name}" created successfully.', 'data': subj.to_dict()}), 201
 
 
 @admin_bp.route('/assignments', methods=['GET'])
