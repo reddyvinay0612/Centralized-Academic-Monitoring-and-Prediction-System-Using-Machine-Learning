@@ -31,10 +31,11 @@ build/
 */build/
 out/
 
-# Database files & MySQL data
+# Database files & MySQL data (keep embedded camps_smart_college.db for zero-config portable execution)
 *.sqlite
 *.sqlite3
 *.db
+!backend/camps_smart_college.db
 instance/
 mysql_data/
 

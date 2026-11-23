@@ -139,12 +139,102 @@ def run_pass_fail_prediction(
         recommendations.append("Maintain consistent problem-solving practice targeting First Class with Distinction (>= 7.75 SGPA).")
         recommendations.append("Review previous years VTU model question papers to maximize external SEE scoring.")
 
+    # -------------------------------------------------------------------------
+    # VTU Examination Eligibility & Semester Detention Analysis
+    # -------------------------------------------------------------------------
+    detention_reasons = []
+    detention_risk = "SAFE"  # "SAFE" | "WARNING_CONDONATION" | "DETAINED"
+    
+    # 1. Statutory Attendance Check (VTU Rule: Min 75%, Condonation 65-74.9%, Detained < 65%)
+    attendance_compliant = attendance >= 75.0
+    if attendance < 65.0:
+        detention_risk = "DETAINED"
+        detention_reasons.append(
+            f"CRITICAL ATTENDANCE DETENTION (NSAR): Current attendance is {attendance:.1f}%, which falls below 65%. Under VTU Section 18.2 regulations, student is DETAINED from semester exams and must repeat the semester."
+        )
+    elif attendance < 75.0:
+        if detention_risk != "DETAINED":
+            detention_risk = "WARNING_CONDONATION"
+        detention_reasons.append(
+            f"ATTENDANCE SHORTAGE CONDONATION REQUIRED: Current attendance ({attendance:.1f}%) is below 75%. Student must obtain Principal medical/institutional condonation to sit for semester end examinations."
+        )
+    else:
+        detention_reasons.append(
+            f"ATTENDANCE COMPLIANCE: Class attendance ({attendance:.1f}%) comfortably exceeds VTU statutory minimum 75% requirement."
+        )
+        
+    # 2. Continuous Internal Evaluation (CIE) Sessional Threshold (VTU Rule: Min 40% = 20/50)
+    cie_compliant = total_cie >= 20.0
+    if total_cie < 20.0:
+        detention_risk = "DETAINED"
+        detention_reasons.append(
+            f"SESSIONAL CIE DETENTION (NSSR): Total CIE score is {total_cie:.1f}/50, which is below the VTU statutory passing mark of 20/50 (40%). Student is disqualified from appearing for this course in SEE."
+        )
+    elif total_cie < 25.0:
+        if detention_risk == "SAFE":
+            detention_risk = "WARNING_CONDONATION"
+        detention_reasons.append(
+            f"BORDERLINE CIE AGGREGATE: Total CIE score ({total_cie:.1f}/50) meets the bare minimum (20/50), but leaves vulnerable margin for semester end theory exams."
+        )
+    else:
+        detention_reasons.append(
+            f"CIE SESSIONAL QUALIFICATION: Total CIE score ({total_cie:.1f}/50) qualifies student well above VTU 20/50 internal sessional threshold."
+        )
+
+    # 3. Vertical Progression / Active Backlogs Allowance (VTU Rule: Max 4 active backlog courses)
+    backlogs_compliant = backlogs <= 4
+    if backlogs > 4:
+        if detention_risk != "DETAINED":
+            detention_risk = "WARNING_CONDONATION"
+        detention_reasons.append(
+            f"VERTICAL PROGRESSION RISK: {backlogs} accumulated backlogs exceed permissible limit (maximum 4). Student is at risk of academic year detention."
+        )
+    else:
+        detention_reasons.append(
+            f"PROGRESSION COMPLIANCE: {backlogs} active backlogs satisfies VTU vertical progression limit (maximum 4 courses permissible)."
+        )
+
+    # Overall Examination Eligibility Verdict
+    if detention_risk == "DETAINED":
+        exam_eligibility = "DETAINED FROM SEMESTER EXAMINATIONS"
+        prediction = "FAIL"
+        prob_pass = min(prob_pass, 5.0)
+        prob_fail = max(prob_fail, 95.0)
+        risk_tier = "HIGH RISK"
+    elif detention_risk == "WARNING_CONDONATION":
+        exam_eligibility = "CONDITIONAL / AT RISK OF DETENTION"
+    else:
+        exam_eligibility = "ELIGIBLE TO TAKE SEMESTER EXAMINATIONS (SUFFICIENT TO APPEAR)"
+
     return {
         "prediction": prediction,
-        "pass_probability": round(prob_pass * 100, 2),
-        "fail_probability": round(prob_fail * 100, 2),
+        "pass_probability": round(prob_pass * 100 if prob_pass <= 1.0 else prob_pass, 2),
+        "fail_probability": round(prob_fail * 100 if prob_fail <= 1.0 else prob_fail, 2),
         "risk_tier": risk_tier,
         "total_cie": round(total_cie, 1),
+        "exam_eligibility": exam_eligibility,
+        "detention_risk": detention_risk,
+        "detention_reasons": detention_reasons,
+        "regulatory_checks": {
+            "attendance": {
+                "value": round(attendance, 1),
+                "threshold": 75.0,
+                "compliant": attendance_compliant,
+                "status": "Compliant" if attendance >= 75.0 else ("Condonation Required" if attendance >= 65.0 else "Detained (NSAR)")
+            },
+            "cie": {
+                "value": round(total_cie, 1),
+                "threshold": 20.0,
+                "compliant": cie_compliant,
+                "status": "Qualified" if total_cie >= 20.0 else "Detained (NSSR)"
+            },
+            "backlogs": {
+                "value": int(backlogs),
+                "max_allowed": 4,
+                "compliant": backlogs_compliant,
+                "status": "Permissible" if backlogs <= 4 else "Progression Barrier"
+            }
+        },
         "factors": factors,
         "recommendations": recommendations
     }

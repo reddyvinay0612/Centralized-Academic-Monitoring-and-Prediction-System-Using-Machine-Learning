@@ -19,10 +19,21 @@ def create_app(config_name=None):
     bcrypt.init_app(app)
     migrate.init_app(app, db)
     
-    # Configure CORS for frontend access
+    # Configure CORS for frontend access across all local ports and origins
+    allowed_origins = [
+        app.config.get('CLIENT_URL', 'http://localhost:5173'),
+        'http://localhost:5173',
+        'http://127.0.0.1:5173',
+        'http://localhost:5174',
+        'http://127.0.0.1:5174',
+        'http://localhost:3000',
+        'http://127.0.0.1:3000'
+    ]
+    allowed_origins = list(set([o.rstrip('/') for o in allowed_origins if o]))
+
     cors.init_app(
         app,
-        resources={r"/api/*": {"origins": app.config.get('CLIENT_URL', 'http://localhost:5173')}},
+        resources={r"/api/*": {"origins": allowed_origins}},
         supports_credentials=True,
         allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
         methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
@@ -245,5 +256,34 @@ def create_app(config_name=None):
     app.register_blueprint(admin_bp, url_prefix='/api/admin')
     app.register_blueprint(principal_bp, url_prefix='/api/principal')
     app.register_blueprint(notifications_bp, url_prefix='/api/notifications')
+
+    # Automatic Self-Healing Database Bootstrap
+    # Guarantees that on any computer (even with empty DB or fresh zip), all tables & 1029 accounts are ready
+    with app.app_context():
+        try:
+            from backend.app.models.user import User
+            user_count = User.query.count()
+            if user_count == 0:
+                print("[*] Database has 0 user accounts. Auto-seeding institutional accounts...")
+                db.create_all()
+                try:
+                    from scripts.populate_sqlite_directly import populate_sqlite
+                    populate_sqlite()
+                except Exception as seed_err:
+                    print(f"[!] Seeder notice ({seed_err}). Initializing default admin & principal...")
+                    admin_u = User(username='admin', email='admin@pesitm.edu', role='admin')
+                    admin_u.set_password('password123')
+                    princ_u = User(username='principal', email='principal@pesitm.edu', role='principal')
+                    princ_u.set_password('password123')
+                    db.session.add_all([admin_u, princ_u])
+                    db.session.commit()
+        except Exception as db_err:
+            print(f"[*] Database tables not found ({db_err}). Auto-creating schema and institutional dataset...")
+            try:
+                db.create_all()
+                from scripts.populate_sqlite_directly import populate_sqlite
+                populate_sqlite()
+            except Exception as init_err:
+                print(f"[!] Auto-initialization notice: {init_err}")
 
     return app

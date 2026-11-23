@@ -187,7 +187,7 @@ def benchmark_and_train():
         ])
 
         scoring = ["accuracy", "f1", "precision", "recall", "roc_auc"]
-        cv_scores = cross_validate(pipe, X_train, y_train, cv=cv, scoring=scoring, n_jobs=-1)
+        cv_scores = cross_validate(pipe, X_train, y_train, cv=cv, scoring=scoring, n_jobs=1)
 
         acc = cv_scores["test_accuracy"].mean()
         f1 = cv_scores["test_f1"].mean()
@@ -244,7 +244,7 @@ def benchmark_and_train():
         "classifier__subsample": [0.8, 1.0]
     }
 
-    grid = GridSearchCV(tuning_pipe, param_grid, cv=3, scoring="f1", n_jobs=-1, verbose=0)
+    grid = GridSearchCV(tuning_pipe, param_grid, cv=3, scoring="f1", n_jobs=1, verbose=0)
     grid.fit(X_train, y_train)
     champion_pipe = grid.best_estimator_
 

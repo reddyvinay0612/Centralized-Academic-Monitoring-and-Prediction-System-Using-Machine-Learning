@@ -201,6 +201,104 @@ export default function PassFailPredictionModal({
             </div>
           ) : activeSubTab === 'forecast' ? (
             <>
+              {/* VTU Semester Examination Eligibility & Detention Verdict Banner */}
+              <div className={`rounded-2xl border p-5 ${
+                result.detention_risk === 'DETAINED'
+                  ? 'border-rose-300 bg-rose-50/80 dark:border-rose-900/60 dark:bg-rose-950/30'
+                  : result.detention_risk === 'WARNING_CONDONATION'
+                  ? 'border-amber-300 bg-amber-50/80 dark:border-amber-900/60 dark:bg-amber-950/30'
+                  : 'border-emerald-300 bg-emerald-50/80 dark:border-emerald-900/60 dark:bg-emerald-950/30'
+              }`}>
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${
+                      result.detention_risk === 'DETAINED'
+                        ? 'bg-rose-600 text-white'
+                        : result.detention_risk === 'WARNING_CONDONATION'
+                        ? 'bg-amber-600 text-white'
+                        : 'bg-emerald-600 text-white'
+                    }`}>
+                      {result.detention_risk === 'DETAINED' ? (
+                        <XCircle className="h-6 w-6" />
+                      ) : result.detention_risk === 'WARNING_CONDONATION' ? (
+                        <AlertTriangle className="h-6 w-6" />
+                      ) : (
+                        <CheckCircle2 className="h-6 w-6" />
+                      )}
+                    </div>
+                    <div>
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-muted dark:text-dark-muted block">
+                        VTU Examination Eligibility & Semester Detention Forecast
+                      </span>
+                      <h3 className={`font-heading text-lg font-black ${
+                        result.detention_risk === 'DETAINED'
+                          ? 'text-rose-700 dark:text-rose-300'
+                          : result.detention_risk === 'WARNING_CONDONATION'
+                          ? 'text-amber-700 dark:text-amber-300'
+                          : 'text-emerald-700 dark:text-emerald-300'
+                      }`}>
+                        {result.exam_eligibility || (isPass ? 'ELIGIBLE TO TAKE SEMESTER EXAMINATIONS (SUFFICIENT TO APPEAR)' : 'DETAINED FROM SEMESTER EXAMINATIONS')}
+                      </h3>
+                    </div>
+                  </div>
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${
+                    result.detention_risk === 'DETAINED'
+                      ? 'bg-rose-200 text-rose-900 dark:bg-rose-900/50 dark:text-rose-200'
+                      : result.detention_risk === 'WARNING_CONDONATION'
+                      ? 'bg-amber-200 text-amber-900 dark:bg-amber-900/50 dark:text-amber-200'
+                      : 'bg-emerald-200 text-emerald-900 dark:bg-emerald-900/50 dark:text-emerald-200'
+                  }`}>
+                    {result.detention_risk === 'DETAINED' ? 'Detained (Ineligible)' : result.detention_risk === 'WARNING_CONDONATION' ? 'Conditional / At Risk' : 'Sufficient & Eligible'}
+                  </span>
+                </div>
+
+                {/* 3 VTU Statutory Checks */}
+                <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-3 border-t border-black/5 dark:border-white/5">
+                  <div className="flex items-center gap-2 text-xs">
+                    {(measures.attendance_percentage ?? 85) >= 75 ? (
+                      <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                    ) : (
+                      <XCircle className="h-4 w-4 text-rose-600 shrink-0" />
+                    )}
+                    <span>
+                      <strong>Attendance:</strong> {measures.attendance_percentage ?? 85.0}% {(measures.attendance_percentage ?? 85) >= 75 ? '(>= 75% VTU Rule - Pass)' : '(Shortage)'}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs">
+                    {(result.total_cie ?? 35) >= 20 ? (
+                      <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                    ) : (
+                      <XCircle className="h-4 w-4 text-rose-600 shrink-0" />
+                    )}
+                    <span>
+                      <strong>CIE Aggregate:</strong> {result.total_cie ?? 35.0}/50 {(result.total_cie ?? 35) >= 20 ? '(>= 20/50 VTU Rule - Pass)' : '(CIE Deficient)'}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs">
+                    {(measures.active_backlogs ?? 0) <= 4 ? (
+                      <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                    ) : (
+                      <XCircle className="h-4 w-4 text-rose-600 shrink-0" />
+                    )}
+                    <span>
+                      <strong>Active Backlogs:</strong> {measures.active_backlogs ?? 0} {(measures.active_backlogs ?? 0) <= 4 ? '(Permissible <= 4)' : '(Progression Barrier)'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Detention Analysis Bullet Points */}
+                {result.detention_reasons && result.detention_reasons.length > 0 && (
+                  <div className="mt-3 pt-2 text-xs space-y-1 text-ink/80 dark:text-dark-text/80">
+                    {result.detention_reasons.map((r, i) => (
+                      <div key={i} className="flex items-start gap-1.5">
+                        <span className="font-bold text-accent">&bull;</span>
+                        <span>{r}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               {/* Outcome Highlight Card */}
               <div className={`rounded-2xl border p-6 text-center ${
                 isPass

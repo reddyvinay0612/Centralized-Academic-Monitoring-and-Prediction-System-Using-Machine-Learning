@@ -31,7 +31,9 @@ def run_system_check():
         # Test DB connection
         try:
             db.session.execute(db.text("SELECT 1"))
-            print("[+] Database Connection: SUCCESS (SQLite DB connected)")
+            from backend.app.models.user import User
+            user_count = User.query.count()
+            print(f"[+] Database Connection: SUCCESS ({user_count} institutional accounts active)")
         except Exception as e:
             print(f"[!] Database Connection: FAILED ({e})")
             

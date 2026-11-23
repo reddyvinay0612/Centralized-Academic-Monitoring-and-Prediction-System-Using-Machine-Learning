@@ -85,7 +85,9 @@ def get_student_profile():
         'user_id': student.user_id,
         'name': student.name,
         'usn': student.usn,
+        'username': user_account.username if user_account else student.usn,
         'email': user_account.email if user_account else '',
+        'phone': user_account.phone if user_account else '',
         'academic_status': student.academic_status,
         'fee_status': student.fee_status,
         'class_id': cls.class_id if cls else None,
@@ -108,6 +110,147 @@ def get_student_profile():
     }
 
     return jsonify({'success': True, 'data': profile_data}), 200
+
+
+@students_bp.route('/profile', methods=['PATCH'])
+@authenticate()
+def update_student_profile():
+    """
+    Allows a student to manage their own account credentials:
+      - Change username (with uniqueness check)
+      - Change password (requires current password verification)
+      - Update contact email/phone
+    
+    SECURITY & RBAC IMMUTABILITY GUARD:
+    Students are strictly forbidden from modifying marks, CIE, attendance, or academic grading.
+    Any attempt to modify academic results is rejected with HTTP 403 Forbidden.
+    """
+    user = request.current_user
+    if user.role != 'student':
+        return jsonify({
+            'success': False,
+            'error': 'FORBIDDEN',
+            'message': 'Only registered students may update their profile via this endpoint.'
+        }), 403
+
+    student, err = resolve_target_student(user)
+    if err:
+        return err
+
+    payload = request.get_json(silent=True) or {}
+
+    # Strict check: reject any attempt to modify academic grading or marks
+    forbidden_keys = [
+        'marks', 'cie', 'cie1', 'cie2', 'cie3', 'attendance', 'attended_classes',
+        'total_classes', 'cgpa', 'sgpa', 'backlogs', 'credits', 'credits_earned',
+        'academic_status', 'fee_status', 'class_id'
+    ]
+    tampered_keys = [k for k in forbidden_keys if k in payload]
+    if tampered_keys:
+        return jsonify({
+            'success': False,
+            'error': 'UNAUTHORIZED_ACADEMIC_TAMPERING',
+            'message': f"Access Denied: Modifications to academic records ({', '.join(tampered_keys)}) are strictly reserved for authorized Faculty, Principal, and Administrators."
+        }), 403
+
+    updated_fields = []
+
+    # 1. Update Username
+    new_username = payload.get('username')
+    if new_username:
+        new_username = str(new_username).strip()
+        if len(new_username) < 3:
+            return jsonify({
+                'success': False,
+                'error': 'INVALID_USERNAME',
+                'message': 'Username must be at least 3 characters long.'
+            }), 400
+        
+        # Check uniqueness across all users
+        existing = User.query.filter(
+            db.func.lower(User.username) == new_username.lower(),
+            User.user_id != user.user_id
+        ).first()
+        if existing:
+            return jsonify({
+                'success': False,
+                'error': 'USERNAME_TAKEN',
+                'message': f"Username '{new_username}' is already in use by another institutional account."
+            }), 409
+
+        old_username = user.username
+        user.username = new_username
+        updated_fields.append(f"username: {old_username} -> {new_username}")
+
+    # 2. Update Password
+    new_password = payload.get('new_password')
+    if new_password:
+        current_password = payload.get('current_password', '')
+        if not current_password:
+            return jsonify({
+                'success': False,
+                'error': 'CURRENT_PASSWORD_REQUIRED',
+                'message': 'Current password is required to set a new password.'
+            }), 400
+
+        if not user.check_password(current_password):
+            return jsonify({
+                'success': False,
+                'error': 'INCORRECT_CURRENT_PASSWORD',
+                'message': 'The current password you provided is incorrect.'
+            }), 400
+
+        if len(new_password) < 6:
+            return jsonify({
+                'success': False,
+                'error': 'WEAK_PASSWORD',
+                'message': 'New password must be at least 6 characters.'
+            }), 400
+
+        user.set_password(new_password)
+        user.must_change_password = False
+        updated_fields.append("password rotated")
+
+    # 3. Update Phone/Email
+    new_phone = payload.get('phone')
+    if new_phone is not None:
+        user.phone = str(new_phone).strip()
+        updated_fields.append("phone updated")
+
+    new_email = payload.get('email')
+    if new_email is not None:
+        new_email = str(new_email).strip().lower()
+        if '@' in new_email:
+            user.email = new_email
+            updated_fields.append("email updated")
+
+    if not updated_fields:
+        return jsonify({
+            'success': True,
+            'message': 'No changes were provided.',
+            'data': {'username': user.username, 'email': user.email, 'phone': user.phone}
+        }), 200
+
+    from backend.app.models import AuditLog
+    AuditLog.query.session.add(AuditLog(
+        user_id=user.user_id,
+        role='student',
+        action='STUDENT_CREDENTIALS_UPDATED',
+        details=f"Student {student.usn} ({student.name}) updated: {'; '.join(updated_fields)}",
+        ip=request.remote_addr
+    ))
+    db.session.commit()
+
+    return jsonify({
+        'success': True,
+        'message': 'Student profile credentials updated successfully.',
+        'data': {
+            'username': user.username,
+            'email': user.email,
+            'phone': user.phone,
+            'updated_fields': updated_fields
+        }
+    }), 200
 
 
 @students_bp.route('/attendance', methods=['GET'])

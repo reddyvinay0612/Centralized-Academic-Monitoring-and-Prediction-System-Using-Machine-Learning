@@ -22,7 +22,11 @@ import {
   RefreshCw,
   FileText,
   ChevronRight,
-  ShieldAlert
+  ShieldAlert,
+  KeyRound,
+  ShieldCheck,
+  Lock,
+  Save
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -52,6 +56,69 @@ export default function StudentDashboard() {
   const [prediction, setPrediction] = useState(null);
   const [remarks, setRemarks] = useState([]);
   const [notifications, setNotifications] = useState([]);
+
+  // Profile Credentials Self-Service State
+  const [profileUsername, setProfileUsername] = useState('');
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [savingUsername, setSavingUsername] = useState(false);
+  const [savingPassword, setSavingPassword] = useState(false);
+
+  useEffect(() => {
+    if (profile?.username || user?.username) {
+      setProfileUsername(profile?.username || user?.username || '');
+    }
+  }, [profile, user]);
+
+  const handleUpdateUsername = async (e) => {
+    e.preventDefault();
+    if (!profileUsername || profileUsername.trim().length < 3) {
+      toast.error('Username must be at least 3 characters.');
+      return;
+    }
+    setSavingUsername(true);
+    try {
+      const res = await studentService.updateProfile({ username: profileUsername.trim() });
+      toast.success(res.message || 'Username updated successfully!');
+      await loadDashboardData();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to update username.');
+    } finally {
+      setSavingUsername(false);
+    }
+  };
+
+  const handleUpdatePassword = async (e) => {
+    e.preventDefault();
+    if (!currentPassword) {
+      toast.error('Please enter your current password.');
+      return;
+    }
+    if (!newPassword || newPassword.length < 6) {
+      toast.error('New password must be at least 6 characters.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error('New passwords do not match.');
+      return;
+    }
+    setSavingPassword(true);
+    try {
+      const res = await studentService.updateProfile({
+        current_password: currentPassword,
+        new_password: newPassword
+      });
+      toast.success(res.message || 'Password changed successfully!');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to update password.');
+    } finally {
+      setSavingPassword(false);
+    }
+  };
 
   // Load all student data
   const loadDashboardData = async () => {
@@ -226,7 +293,8 @@ export default function StudentDashboard() {
             { id: 'academics', label: 'Marks & Internal Evaluation', icon: BookOpen },
             { id: 'timetable', label: 'Class Timetable', icon: Calendar },
             { id: 'guidance', label: 'Mentor Guidance', icon: MessageSquare, count: remarks?.length },
-            { id: 'notices', label: 'Notices & Circulars', icon: Bell, count: notifications?.length }
+            { id: 'notices', label: 'Notices & Circulars', icon: Bell, count: notifications?.length },
+            { id: 'profile', label: 'My Profile & Credentials', icon: User }
           ].map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -866,6 +934,221 @@ export default function StudentDashboard() {
               </div>
             </div>
           </Card>
+        </div>
+      )}
+
+      {/* 8. TAB CONTENT: Student Profile & Credentials */}
+      {activeTab === 'profile' && (
+        <div className="space-y-6 animate-fade-in">
+          {/* Institutional Academic Record Notice */}
+          <div className="rounded-2xl border border-blue-200 bg-blue-50/70 p-5 dark:border-blue-900/40 dark:bg-blue-950/20">
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white">
+                <ShieldCheck className="h-5 w-5" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="font-heading text-subheading font-bold text-blue-900 dark:text-blue-200">
+                  VTU Institutional Governance: Academic Record Immutability Guard
+                </h3>
+                <p className="text-caption text-blue-800/80 dark:text-blue-300/80 leading-relaxed">
+                  As an enrolled student, you have self-service authorization to manage your account credentials (username and login password).
+                  {' '}<strong>
+                    All continuous internal evaluation (CIE) scores, marks, attendance logs, and SGPA results are cryptographically protected and strictly read-only for students.
+                  </strong>{' '}
+                  Academic evaluation alteration permissions are restricted solely to authorized Faculty Teachers, the Principal, and System Administrators.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            {/* Left: Institutional Profile Particulars */}
+            <div className="lg:col-span-1 space-y-6">
+              <Card className="p-6">
+                <div className="flex flex-col items-center text-center">
+                  <div className="flex h-20 w-20 items-center justify-center rounded-full bg-accent/15 text-accent text-2xl font-black">
+                    {(profile?.name || user?.name || 'S').charAt(0)}
+                  </div>
+                  <h3 className="mt-3 font-heading text-lg font-bold text-ink dark:text-dark-text">
+                    {profile?.name || user?.name}
+                  </h3>
+                  <div className="mt-1 flex items-center gap-2">
+                    <Pill variant="accent">{profile?.usn || user?.username}</Pill>
+                    <Pill variant={profile?.academic_status === 'active' ? 'low' : 'neutral'}>
+                      {profile?.academic_status || 'Active'}
+                    </Pill>
+                  </div>
+                </div>
+
+                <div className="mt-6 space-y-3.5 border-t border-line pt-4 text-xs dark:border-dark-line">
+                  <div className="flex justify-between py-1">
+                    <span className="text-muted">Current Program</span>
+                    <span className="font-semibold text-ink dark:text-dark-text text-right">
+                      {profile?.department?.dept_name || 'Computer Science & Engineering'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between py-1">
+                    <span className="text-muted">Class & Section</span>
+                    <span className="font-semibold text-ink dark:text-dark-text">
+                      {profile?.class_name} (Sec {profile?.section})
+                    </span>
+                  </div>
+                  <div className="flex justify-between py-1">
+                    <span className="text-muted">Semester</span>
+                    <span className="font-semibold text-ink dark:text-dark-text">
+                      {profile?.semester}th Sem &bull; {profile?.academic_year}
+                    </span>
+                  </div>
+                  <div className="flex justify-between py-1">
+                    <span className="text-muted">Fee Status</span>
+                    <Pill variant={profile?.fee_status === 'paid' ? 'low' : 'high'}>
+                      {profile?.fee_status === 'paid' ? 'Paid / Cleared' : 'Pending'}
+                    </Pill>
+                  </div>
+                </div>
+
+                {/* Faculty Mentor Card */}
+                <div className="mt-6 rounded-xl border border-line bg-page p-4 text-xs dark:border-dark-line dark:bg-dark-page">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted block mb-2">
+                    Assigned Faculty Mentor
+                  </span>
+                  <p className="font-bold text-ink dark:text-dark-text">
+                    {profile?.mentor?.name || 'Prof. Anita Rao'}
+                  </p>
+                  <p className="text-muted">
+                    {profile?.mentor?.designation || 'Assistant Professor'} &bull; {profile?.mentor?.employee_id || 'EMP-CSE-01'}
+                  </p>
+                  {profile?.mentor?.phone && (
+                    <p className="mt-1.5 flex items-center gap-1.5 text-accent font-medium">
+                      <Phone className="h-3 w-3" />
+                      {profile.mentor.phone}
+                    </p>
+                  )}
+                </div>
+              </Card>
+            </div>
+
+            {/* Right: Account Credentials Self-Service Management */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Form 1: Change Username */}
+              <Card className="p-6">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/10 text-accent">
+                    <User className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <CardTitle>Account Username</CardTitle>
+                    <CardDescription>
+                      Update your unique portal login username. You can sign in using either this username or your USN.
+                    </CardDescription>
+                  </div>
+                </div>
+
+                <form onSubmit={handleUpdateUsername} className="mt-5 space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-ink dark:text-dark-text mb-1">
+                      Portal Username *
+                    </label>
+                    <input
+                      type="text"
+                      value={profileUsername}
+                      onChange={(e) => setProfileUsername(e.target.value)}
+                      placeholder="e.g. pavan.kumar or 4PM23CS071"
+                      className="w-full rounded-input border border-line bg-surface px-4 py-2.5 text-body text-ink transition-colors focus:border-accent focus:outline-none dark:border-dark-line dark:bg-dark-surface dark:text-dark-text"
+                      required
+                    />
+                    <p className="mt-1 text-[11px] text-muted">
+                      Minimum 3 characters. Must be unique across all institutional accounts.
+                    </p>
+                  </div>
+
+                  <div className="flex justify-end">
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      disabled={savingUsername}
+                      className="flex items-center gap-2 font-bold"
+                    >
+                      {savingUsername ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                      Update Username
+                    </Button>
+                  </div>
+                </form>
+              </Card>
+
+              {/* Form 2: Change Password */}
+              <Card className="p-6">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600">
+                    <KeyRound className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <CardTitle>Rotate Security Password</CardTitle>
+                    <CardDescription>
+                      Secure your student portal by setting a strong personal password.
+                    </CardDescription>
+                  </div>
+                </div>
+
+                <form onSubmit={handleUpdatePassword} className="mt-5 space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-ink dark:text-dark-text mb-1">
+                      Current Password *
+                    </label>
+                    <input
+                      type="password"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      placeholder="Enter your current password"
+                      className="w-full rounded-input border border-line bg-surface px-4 py-2.5 text-body text-ink transition-colors focus:border-accent focus:outline-none dark:border-dark-line dark:bg-dark-surface dark:text-dark-text"
+                      required
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-ink dark:text-dark-text mb-1">
+                        New Password *
+                      </label>
+                      <input
+                        type="password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder="Minimum 6 characters"
+                        className="w-full rounded-input border border-line bg-surface px-4 py-2.5 text-body text-ink transition-colors focus:border-accent focus:outline-none dark:border-dark-line dark:bg-dark-surface dark:text-dark-text"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-ink dark:text-dark-text mb-1">
+                        Confirm New Password *
+                      </label>
+                      <input
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="Re-type new password"
+                        className="w-full rounded-input border border-line bg-surface px-4 py-2.5 text-body text-ink transition-colors focus:border-accent focus:outline-none dark:border-dark-line dark:bg-dark-surface dark:text-dark-text"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end pt-2">
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      disabled={savingPassword}
+                      className="flex items-center gap-2 font-bold bg-amber-600 hover:bg-amber-700 text-white"
+                    >
+                      {savingPassword ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Lock className="h-4 w-4" />}
+                      Rotate Password
+                    </Button>
+                  </div>
+                </form>
+              </Card>
+            </div>
+          </div>
         </div>
       )}
 

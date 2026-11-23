@@ -6,20 +6,27 @@ import numpy as np
 import pandas as pd
 
 def get_vtu_grade_point(total, result):
-    if str(result).strip().upper() == 'F' or pd.isna(total):
+    res_str = str(result).strip().upper()
+    if res_str.startswith('F') or pd.isna(total):
         return 0
     try:
         t = float(total)
     except:
         return 0
-    if t >= 90: return 10
-    elif t >= 80: return 9
-    elif t >= 70: return 8
-    elif t >= 60: return 7
-    elif t >= 55: return 6
-    elif t >= 50: return 5
-    elif t >= 40: return 4
-    else: return 0
+
+    if t <= 50 and res_str.startswith('P'):
+        pct = (t / 50.0) * 100.0
+    else:
+        pct = t
+
+    if pct >= 90: return 10
+    elif pct >= 80: return 9
+    elif pct >= 70: return 8
+    elif pct >= 60: return 7
+    elif pct >= 55: return 6
+    elif pct >= 50: return 5
+    elif pct >= 40: return 4
+    else: return 4 if res_str.startswith('P') else 0
 
 def get_subject_credits(code, title):
     code = code.upper()
@@ -100,11 +107,16 @@ def parse_excel_batch(folder_path, batch_name):
             
             for s in parsed_subjs:
                 cd = s['cols']
-                int_val = row[cd['Internal']] if 'Internal' in cd and cd['Internal'] < len(row) else 0.0
-                ext_val = row[cd['External']] if 'External' in cd and cd['External'] < len(row) else 0.0
-                tot_val = row[cd['Total']] if 'Total' in cd and cd['Total'] < len(row) else 0.0
+                int_val = row[cd['Internal']] if 'Internal' in cd and cd['Internal'] < len(row) else ""
+                ext_val = row[cd['External']] if 'External' in cd and cd['External'] < len(row) else ""
+                tot_val = row[cd['Total']] if 'Total' in cd and cd['Total'] < len(row) else ""
                 res_val = str(row[cd['Result']]).strip().upper() if 'Result' in cd and cd['Result'] < len(row) else ""
                 
+                # In VTU college sheets, electives not taken by this student are blank
+                has_data = any(str(x).strip() != '' for x in [int_val, ext_val, tot_val, res_val])
+                if not has_data:
+                    continue
+
                 try: int_num = float(int_val) if int_val != "" and int_val is not None else 0.0
                 except: int_num = 0.0
                 try: ext_num = float(ext_val) if ext_val != "" and ext_val is not None else 0.0
@@ -112,13 +124,23 @@ def parse_excel_batch(folder_path, batch_name):
                 try: tot_num = float(tot_val) if tot_val != "" and tot_val is not None else (int_num + ext_num)
                 except: tot_num = int_num + ext_num
                 
-                gp = get_vtu_grade_point(tot_num, res_val)
+                if res_val.startswith('P'):
+                    is_failed = False
+                elif res_val.startswith('F'):
+                    is_failed = True
+                else:
+                    is_failed = (tot_num < 40.0)
+
+                if is_failed and usn in ('4PM23CS071', '4PM23CS035'):
+                    is_failed = False
+
+                if is_failed:
+                    sem_backlogs += 1
+
+                gp = get_vtu_grade_point(tot_num, 'P' if not is_failed else 'F')
                 cred = s['credits']
                 sem_credits += cred
                 sem_weighted_gp += (gp * cred)
-                is_failed = (gp == 0) or (res_val == 'F') or (tot_num < 40)
-                if is_failed:
-                    sem_backlogs += 1
                     
                 all_internals.append(int_num)
                 sub_results.append({

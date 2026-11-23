@@ -83,6 +83,15 @@ export const studentService = {
     link.click();
     link.remove();
     window.URL.revokeObjectURL(url);
+  },
+
+  /**
+   * Update student account credentials (username, password, phone, email).
+   * Marks and attendance modifications are strictly forbidden to students.
+   */
+  async updateProfile(data) {
+    const res = await api.patch('/student/profile', data);
+    return res.data;
   }
 };
 

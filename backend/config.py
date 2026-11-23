@@ -52,15 +52,22 @@ class Config:
             import pymysql
             from urllib.parse import urlparse
             _p = urlparse(_target_mysql_uri)
+            _db_name = _p.path.lstrip('/') or DB_NAME or 'camps_db'
             _c = pymysql.connect(
                 host='127.0.0.1' if not _p.hostname or _p.hostname == 'localhost' else _p.hostname,
                 user=_p.username or 'root',
                 password=_p.password or '',
+                database=_db_name,
                 port=_p.port or 3306,
-                connect_timeout=3
+                connect_timeout=2
             )
+            # Verify the database has the users table populated
+            with _c.cursor() as _cursor:
+                _cursor.execute("SELECT COUNT(*) FROM users")
+                _cnt = _cursor.fetchone()
+                if _cnt and _cnt[0] > 0:
+                    _mysql_connected = True
             _c.close()
-            _mysql_connected = True
         except Exception:
             _mysql_connected = False
 
