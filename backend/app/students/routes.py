@@ -232,11 +232,12 @@ def update_student_profile():
         }), 200
 
     from backend.app.models import AuditLog
-    AuditLog.query.session.add(AuditLog(
+    db.session.add(AuditLog(
         user_id=user.user_id,
         role='student',
         action='STUDENT_CREDENTIALS_UPDATED',
-        details=f"Student {student.usn} ({student.name}) updated: {'; '.join(updated_fields)}",
+        target_type='User',
+        target_id=user.user_id,
         ip=request.remote_addr
     ))
     db.session.commit()
