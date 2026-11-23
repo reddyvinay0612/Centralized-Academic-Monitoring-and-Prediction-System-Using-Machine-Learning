@@ -1,0 +1,162 @@
+{
+  "dataset": {
+    "total_students": 131,
+    "semesters_analyzed": "Sem 1 to Sem 6",
+    "features_used": [
+      "Sem1_SGPA_clean",
+      "Sem2_SGPA_clean",
+      "Sem3_SGPA",
+      "Sem4_SGPA",
+      "Sem5_SGPA",
+      "previous_sem_sgpa",
+      "cgpa",
+      "backlogs",
+      "Sem5_internal_pct",
+      "avg_ia",
+      "sgpa_trend",
+      "cgpa_deviation",
+      "internal_ratio",
+      "is_lateral_entry"
+    ]
+  },
+  "module_1_pass_fail": {
+    "Random Forest": {
+      "Accuracy": 0.9082621082621083,
+      "Precision": 0.9572463768115942,
+      "Recall": 0.939855072463768,
+      "F1_Score": 0.9480069894130947,
+      "ROC_AUC": 0.8929951690821255
+    },
+    "Gradient Boosting": {
+      "Accuracy": 0.9002849002849003,
+      "Precision": 0.9407891963109354,
+      "Recall": 0.9481884057971015,
+      "F1_Score": 0.9439048206393256,
+      "ROC_AUC": 0.8655797101449275
+    },
+    "XGBoost Classifier": {
+      "Accuracy": 0.8851851851851851,
+      "Precision": 0.956851119894598,
+      "Recall": 0.9137681159420289,
+      "F1_Score": 0.9338602643260259,
+      "ROC_AUC": 0.9032608695652173
+    },
+    "Logistic Regression": {
+      "Accuracy": 0.8703703703703705,
+      "Precision": 0.9730848861283643,
+      "Recall": 0.8797101449275363,
+      "F1_Score": 0.9218548153860985,
+      "ROC_AUC": 0.9479468599033817
+    },
+    "Decision Tree": {
+      "Accuracy": 0.8398860398860398,
+      "Precision": 0.9367200610221206,
+      "Recall": 0.8793478260869566,
+      "F1_Score": 0.9054345521096806,
+      "ROC_AUC": 0.7207125603864736
+    }
+  },
+  "module_2_risk_level": {
+    "Extra Trees": {
+      "Accuracy": 0.8168091168091168,
+      "F1_Macro": 0.6295964686208588,
+      "F1_Weighted": 0.82319893445597
+    },
+    "Random Forest": {
+      "Accuracy": 0.8017094017094017,
+      "F1_Macro": 0.611867734794564,
+      "F1_Weighted": 0.8132917627851963
+    },
+    "Logistic Regression": {
+      "Accuracy": 0.7783475783475783,
+      "F1_Macro": 0.6025622486598096,
+      "F1_Weighted": 0.7971736397346154
+    },
+    "XGBoost Multi-Class": {
+      "Accuracy": 0.8549857549857549,
+      "F1_Macro": 0.5914267707461127,
+      "F1_Weighted": 0.8355726966674215
+    },
+    "Gradient Boosting": {
+      "Accuracy": 0.801139601139601,
+      "F1_Macro": 0.530614656031559,
+      "F1_Weighted": 0.7937983008873972
+    }
+  },
+  "module_3a_sem6_total_marks": {
+    "Ridge Regressor": {
+      "R2_Score": 0.8031037805479564,
+      "MAE (Marks)": 2.7518769165679986,
+      "RMSE (Marks)": 3.5295418919792922
+    },
+    "Linear Regression": {
+      "R2_Score": 0.795069597720343,
+      "MAE (Marks)": 2.7969797738644315,
+      "RMSE (Marks)": 3.5949393665270364
+    },
+    "Random Forest Regressor": {
+      "R2_Score": 0.7911537936534263,
+      "MAE (Marks)": 2.8628723637856104,
+      "RMSE (Marks)": 3.6341308416252147
+    },
+    "XGBoost Regressor": {
+      "R2_Score": 0.7753754663174349,
+      "MAE (Marks)": 2.940179835479823,
+      "RMSE (Marks)": 3.7587195030415566
+    },
+    "Gradient Boosting Regressor": {
+      "R2_Score": 0.770481413942373,
+      "MAE (Marks)": 2.9920413297676918,
+      "RMSE (Marks)": 3.808340494521546
+    }
+  },
+  "module_3b_sem6_sgpa": {
+    "Ridge Regressor": {
+      "R2_Score": 0.8090339693344711,
+      "MAE (SGPA)": 0.33930026610277814,
+      "RMSE (SGPA)": 0.4353126454334314
+    },
+    "Linear Regression": {
+      "R2_Score": 0.7962713367377481,
+      "MAE (SGPA)": 0.3496037826039079,
+      "RMSE (SGPA)": 0.44953604968091787
+    },
+    "Random Forest Regressor": {
+      "R2_Score": 0.78628627596801,
+      "MAE (SGPA)": 0.3698932253997008,
+      "RMSE (SGPA)": 0.46114365258350914
+    },
+    "XGBoost Regressor": {
+      "R2_Score": 0.7768324119061558,
+      "MAE (SGPA)": 0.38765095699342905,
+      "RMSE (SGPA)": 0.4722022203298744
+    },
+    "Gradient Boosting Regressor": {
+      "R2_Score": 0.7610819033795998,
+      "MAE (SGPA)": 0.39466818981369817,
+      "RMSE (SGPA)": 0.4900759732626735
+    }
+  },
+  "module_4_marks_range": {
+    "XGBoost Classifier": {
+      "Exact_Accuracy": 0.7102564102564103,
+      "Adjacent_Band_Acc (\u00b11 Band)": 1.0,
+      "F1_Weighted": 0.689594439963213
+    },
+    "Random Forest": {
+      "Exact_Accuracy": 0.6948717948717948,
+      "Adjacent_Band_Acc (\u00b11 Band)": 1.0,
+      "F1_Weighted": 0.6879838686147297
+    },
+    "Logistic Regression": {
+      "Exact_Accuracy": 0.6797720797720797,
+      "Adjacent_Band_Acc (\u00b11 Band)": 1.0,
+      "F1_Weighted": 0.6723608071722702
+    },
+    "Gradient Boosting": {
+      "Exact_Accuracy": 0.6717948717948719,
+      "Adjacent_Band_Acc (\u00b11 Band)": 0.9923076923076923,
+      "F1_Weighted": 0.661133904946545
+    }
+  }
+}
