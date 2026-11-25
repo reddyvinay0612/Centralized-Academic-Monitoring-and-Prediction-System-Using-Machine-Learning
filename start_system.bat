@@ -1,6 +1,17 @@
 @echo off
 title CAMPS-ML System Launcher
 color 0B
+set "PATH=C:\Users\vinay\AppData\Local\Python\bin;C:\Users\vinay\AppData\Local\Python\pythoncore-3.14-64\Scripts;%PATH%"
+
+set PYTHON_CMD=python
+if exist "C:\Users\vinay\AppData\Local\Python\bin\python.exe" (
+    set PYTHON_CMD="C:\Users\vinay\AppData\Local\Python\bin\python.exe"
+) else (
+    where py >nul 2>nul
+    if %errorlevel% equ 0 (
+        set PYTHON_CMD=py
+    )
+)
 echo ===============================================================================
 echo   PESITM SHIVAMOGGA - SMART COLLEGE MANAGEMENT & ACADEMIC PREDICTION SYSTEM
 echo                 Centralized Academic Monitoring (CAMPS-ML)

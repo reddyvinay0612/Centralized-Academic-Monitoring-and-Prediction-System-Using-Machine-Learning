@@ -1013,10 +1013,10 @@ export default function StudentDashboard() {
                     Assigned Faculty Mentor
                   </span>
                   <p className="font-bold text-ink dark:text-dark-text">
-                    {profile?.mentor?.name || 'Prof. Anita Rao'}
+                    {profile?.mentor?.name || 'Dr. Prasanna Kumar H R'}
                   </p>
                   <p className="text-muted">
-                    {profile?.mentor?.designation || 'Assistant Professor'} &bull; {profile?.mentor?.employee_id || 'EMP-CSE-01'}
+                    {profile?.mentor?.designation || 'Professor & Head'} &bull; {profile?.mentor?.employee_id || 'PES-HOD-CSE-01'}
                   </p>
                   {profile?.mentor?.phone && (
                     <p className="mt-1.5 flex items-center gap-1.5 text-accent font-medium">

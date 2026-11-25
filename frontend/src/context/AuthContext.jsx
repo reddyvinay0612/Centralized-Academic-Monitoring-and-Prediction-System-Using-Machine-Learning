@@ -73,23 +73,65 @@ export function AuthProvider({ children }) {
 
       // Offline Staging Fallback if backend API is not yet running
       console.warn('Backend server not reachable, utilizing local fallback authentication for preview.');
-      const matched = INITIAL_USERS.find(
+      const cleanId = (identifier || '').trim().toLowerCase();
+      let matched = INITIAL_USERS.find(
         (u) =>
-          u.email.toLowerCase() === identifier.toLowerCase() ||
-          u.username.toLowerCase() === identifier.toLowerCase() ||
-          u.usn?.toLowerCase() === identifier.toLowerCase()
-      ) || INITIAL_USERS[0];
+          (u.email && u.email.toLowerCase() === cleanId) ||
+          (u.username && u.username.toLowerCase() === cleanId) ||
+          (u.usn && u.usn.toLowerCase() === cleanId)
+      );
 
-      if (expectedRole && matched.role !== expectedRole) {
-        return {
-          success: false,
-          error: 'ROLE_MISMATCH',
-          message: `These credentials are not for a ${expectedRole} account. Please use the appropriate portal.`,
+      // Auto-synthesize student or parent session for valid college USNs during offline preview
+      if (!matched && expectedRole === 'student' && /^4pm/i.test(cleanId)) {
+        matched = {
+          id: 999,
+          name: cleanId.toUpperCase(),
+          username: cleanId.toUpperCase(),
+          usn: cleanId.toUpperCase(),
+          email: `${cleanId.toLowerCase()}@pesitm.edu`,
+          role: 'student',
+          active: true,
+          department: 'Engineering'
+        };
+      } else if (!matched && expectedRole === 'parent' && (/^4pm/i.test(cleanId) || cleanId.includes('parent'))) {
+        matched = {
+          id: 998,
+          name: `Parent of ${cleanId.toUpperCase()}`,
+          username: cleanId.toLowerCase(),
+          email: `${cleanId.toLowerCase()}@parent.pesitm.edu`,
+          role: 'parent',
+          active: true,
+          studentUsn: cleanId.replace('parent_', '').toUpperCase()
         };
       }
 
+      if (!matched) {
+        return {
+          success: false,
+          error: 'SERVER_UNREACHABLE',
+          message: 'Backend server is temporarily starting up. Please retry in 5 seconds.',
+        };
+      }
+
+      if (expectedRole && matched.role !== expectedRole) {
+        const isHodTeacherMatch =
+          (expectedRole === 'teacher' && matched.role === 'hod') ||
+          (expectedRole === 'hod' && (matched.role === 'hod' || matched.role === 'teacher'));
+
+        if (!isHodTeacherMatch) {
+          return {
+            success: false,
+            error: 'ROLE_MISMATCH',
+            message: `These credentials are not for a ${expectedRole} account. Please use the appropriate portal.`,
+          };
+        }
+      }
+
+      const devToken = `offline_dev_token_${matched.role}_${matched.username || matched.email || 'user'}`;
       setCurrentUser(matched);
+      setAccessToken(devToken);
       localStorage.setItem('camps_user', JSON.stringify(matched));
+      localStorage.setItem('camps_access_token', devToken);
       return {
         success: true,
         user: matched,

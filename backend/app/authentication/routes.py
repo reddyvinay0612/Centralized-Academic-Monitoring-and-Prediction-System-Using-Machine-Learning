@@ -188,7 +188,11 @@ def login():
     # Verify expectedRole if signing in on a role-specific login portal
     if expected_role:
         user_role = user.role
-        role_matches = (user_role == expected_role) or (expected_role == 'teacher' and user_role == 'hod')
+        role_matches = (
+            (user_role == expected_role) or
+            (expected_role == 'teacher' and user_role == 'hod') or
+            (expected_role == 'hod' and (user_role == 'hod' or (user.teacher_profile and user.teacher_profile.designation and 'hod' in user.teacher_profile.designation.lower())))
+        )
         if not role_matches:
             AuditLog.query.session.add(AuditLog(
                 user_id=user.user_id,
@@ -234,7 +238,7 @@ def login():
         'student': '/student/dashboard',
         'parent': '/parent/dashboard',
         'teacher': '/teacher/dashboard',
-        'hod': '/teacher/dashboard',
+        'hod': '/hod/dashboard',
         'admin': '/admin/dashboard',
         'principal': '/principal/dashboard'
     }

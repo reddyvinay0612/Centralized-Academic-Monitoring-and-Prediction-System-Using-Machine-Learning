@@ -36,7 +36,7 @@ export default function MyProgress() {
 
   return (
     <div className="space-y-6">
-      {/* Top Banner & Quick Persona Switcher for Viva Demo */}
+      {/* Top Banner */}
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <div className="flex items-center gap-2">
@@ -50,22 +50,6 @@ export default function MyProgress() {
           <p className="mt-1 text-body text-muted dark:text-dark-muted">
             PESITM Shivamogga &bull; Personalized learning analytics, ML risk assessment, and mentor guidance.
           </p>
-        </div>
-
-        {/* Demo Selector */}
-        <div className="flex items-center gap-2 rounded-input border border-line bg-surface px-3 py-1.5 text-caption dark:border-dark-line dark:bg-dark-surface">
-          <span className="text-muted dark:text-dark-muted font-medium">Viewing as:</span>
-          <select
-            value={selectedStudentId}
-            onChange={(e) => {
-              setSelectedStudentId(Number(e.target.value));
-              toast.success(`Switched view to student profile.`);
-            }}
-            className="bg-transparent font-semibold text-accent focus:outline-none cursor-pointer"
-          >
-            <option value={1}>Poorvi V S (Low Risk / 9.15 SGPA)</option>
-            <option value={2}>Rohan Verma (High Risk / 5.20 SGPA)</option>
-          </select>
         </div>
       </div>
 
@@ -86,7 +70,7 @@ export default function MyProgress() {
         <div className="flex items-center gap-3 text-caption">
           <div className="rounded-input border border-line bg-page px-3 py-1.5 dark:border-dark-line dark:bg-dark-page">
             <span className="text-muted dark:text-dark-muted">Assigned Mentor: </span>
-            <span className="font-semibold text-ink dark:text-dark-text">{student.mentorName || 'Prof. Anita Rao'}</span>
+            <span className="font-semibold text-ink dark:text-dark-text">{student.mentorName || 'Dr. Prasanna Kumar H R'}</span>
           </div>
         </div>
       </Card>
@@ -260,7 +244,7 @@ export default function MyProgress() {
           <div className="mt-4 rounded-input border border-line bg-accent/5 p-3 text-caption text-ink dark:border-dark-line dark:bg-accent/10 dark:text-dark-text">
             <span className="font-semibold text-accent">Need Mentorship Assistance? </span>
             <span>
-              Contact your faculty counselor <b>{student.mentorName || 'Prof. Anita Rao'}</b> in Room CS-204 or via email.
+              Contact your faculty counselor <b>{student.mentorName || 'Dr. Prasanna Kumar H R'}</b> in Room CS-204 or via email.
             </span>
           </div>
         </Card>

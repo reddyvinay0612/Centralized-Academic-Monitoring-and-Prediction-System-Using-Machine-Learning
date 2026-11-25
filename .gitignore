@@ -55,3 +55,8 @@ Thumbs.db
 reports_output/*.pdf
 reports_output/*.xlsx
 !reports_output/.gitkeep
+
+# Temporary logs & scratch
+*.log
+flask_*.log
+scratch/

@@ -1,34 +1,47 @@
-# Base Image
-FROM python:3.11-slim
+# ==============================================================================
+# Multi-Stage Production Dockerfile for CAMPS-ML
+# ==============================================================================
 
-# Maintainer / Metadata
-LABEL maintainer="CAMPS-ML Engineering Team"
-LABEL description="Centralized Academic Monitoring and Prediction System Using Machine Learning"
+# Stage 1: Build Frontend Assets
+FROM node:18-alpine AS frontend-builder
+WORKDIR /app/frontend
+COPY frontend/package*.json ./
+RUN npm ci
+COPY frontend/ ./
+RUN npm run build
 
-# Set environment variables
+# Stage 2: Production Python Backend with Built Frontend
+FROM python:3.11-slim AS production
+
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     FLASK_ENV=production \
     PORT=5000
 
-# Set working directory
 WORKDIR /app
 
-# Install system dependencies
+# Install system runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install python requirements
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt gunicorn
+# Install Python dependencies
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application source code
-COPY . .
+# Copy backend code, ML models, and database
+COPY backend/ ./backend/
+COPY ml_engine/ ./ml_engine/
+COPY run.py ./
 
-# Run database seeder if not populated, then expose port
+# Copy built frontend assets from Stage 1 into frontend/dist
+COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
+
 EXPOSE 5000
 
-# Start production server with Gunicorn (4 workers, 120s timeout for ML inference)
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "3", "--timeout", "120", "wsgi:app"]
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
+  CMD curl -f http://localhost:5000/api/health || exit 1
+
+CMD ["gunicorn", "--workers=2", "--threads=4", "--timeout=120", "--bind=0.0.0.0:5000", "run:app"]

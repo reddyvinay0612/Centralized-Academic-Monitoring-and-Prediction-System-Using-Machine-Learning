@@ -7,6 +7,7 @@ import ChooseLogin from '@/authentication/ChooseLogin';
 import StudentLogin from '@/authentication/StudentLogin';
 import ParentLogin from '@/authentication/ParentLogin';
 import TeacherLogin from '@/authentication/TeacherLogin';
+import HodLogin from '@/authentication/HodLogin';
 import AdminLogin from '@/authentication/AdminLogin';
 import PrincipalLogin from '@/authentication/PrincipalLogin';
 import Login from '@/pages/Login';
@@ -21,6 +22,7 @@ import Admin from '@/pages/Admin';
 import StudentDashboard from '@/dashboards/student/StudentDashboard';
 import ParentDashboard from '@/dashboards/parent/ParentDashboard';
 import TeacherDashboard from '@/dashboards/teacher/TeacherDashboard';
+import HodDashboard from '@/dashboards/hod/HodDashboard';
 import AdminDashboard from '@/dashboards/admin/AdminDashboard';
 import PrincipalDashboard from '@/dashboards/principal/PrincipalDashboard';
 import NotFound from '@/pages/NotFound';
@@ -34,10 +36,11 @@ export default function AppRoutes() {
       {/* 2. Choose Your Login Portal (5 Cards) */}
       <Route path="/login" element={<ChooseLogin />} />
 
-      {/* Role-Specific Login Routes (Dedicated 5 Portal Interfaces) */}
+      {/* Role-Specific Login Routes (Dedicated 6 Portal Interfaces) */}
       <Route path="/login/student" element={<StudentLogin />} />
       <Route path="/login/parent" element={<ParentLogin />} />
       <Route path="/login/teacher" element={<TeacherLogin />} />
+      <Route path="/login/hod" element={<HodLogin />} />
       <Route path="/login/admin" element={<AdminLogin />} />
       <Route path="/login/principal" element={<PrincipalLogin />} />
 
@@ -50,6 +53,9 @@ export default function AppRoutes() {
       </Route>
       <Route path="/teacher/dashboard" element={<AppShell />}>
         <Route index element={<TeacherDashboard />} />
+      </Route>
+      <Route path="/hod/dashboard" element={<AppShell />}>
+        <Route index element={<HodDashboard />} />
       </Route>
       <Route path="/admin/dashboard" element={<AppShell />}>
         <Route index element={<AdminDashboard />} />
@@ -71,6 +77,7 @@ export default function AppRoutes() {
         <Route path="student/dashboard" element={<StudentDashboard />} />
         <Route path="parent/dashboard" element={<ParentDashboard />} />
         <Route path="teacher/dashboard" element={<TeacherDashboard />} />
+        <Route path="hod/dashboard" element={<HodDashboard />} />
         <Route path="admin/dashboard" element={<AdminDashboard />} />
         <Route path="principal/dashboard" element={<PrincipalDashboard />} />
         <Route path={ROUTES.ADMIN.replace('/', '')} element={<AdminDashboard />} />

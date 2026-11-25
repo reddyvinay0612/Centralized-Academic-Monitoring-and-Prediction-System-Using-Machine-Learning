@@ -290,7 +290,7 @@ export default function Students() {
                         />
                       </td>
                       <td className="px-4 py-3 text-caption text-muted dark:text-dark-muted">
-                        {student.mentorName || 'Prof. Anita Rao'}
+                        {student.mentorName || 'Dr. Prasanna Kumar H R'}
                       </td>
                       <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
                         <Button

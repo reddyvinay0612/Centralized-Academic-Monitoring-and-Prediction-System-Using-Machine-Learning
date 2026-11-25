@@ -501,34 +501,68 @@ def get_student_prediction():
     pred = Prediction.query.filter_by(student_id=student.student_id).order_by(Prediction.generated_at.desc()).first()
 
     if not pred:
-        # Fallback heuristic calculation if no model run has recorded yet
+        # Compute live ML prediction using the trained multi-department champions
+        from backend.app.services.ml_prediction_service import run_pass_fail_prediction
+        
+        marks_records = Mark.query.filter_by(student_id=student.student_id).all()
+        sem_results = SemesterResult.query.filter_by(student_id=student.student_id).order_by(SemesterResult.semester.asc()).all()
         att_records = Attendance.query.filter_by(student_id=student.student_id).all()
+
+        ia1_scores = [float(m.cie1) for m in marks_records if m.cie1 is not None]
+        ia2_scores = [float(m.cie2) for m in marks_records if m.cie2 is not None]
+        ia3_scores = [float(m.cie3) for m in marks_records if m.cie3 is not None]
+        assign_scores = [float(m.assignment_marks) for m in marks_records if m.assignment_marks is not None]
+
+        ia1 = float(np.mean(ia1_scores)) if ia1_scores else 20.0
+        ia2 = float(np.mean(ia2_scores)) if ia2_scores else 20.0
+        ia3 = float(np.mean(ia3_scores)) if ia3_scores else 20.0
+        assignment = float(np.mean(assign_scores)) if assign_scores else 8.5
+
+        sgpa_by_sem = {sr.semester: float(sr.sgpa) for sr in sem_results if sr.sgpa is not None}
+        sem1 = sgpa_by_sem.get(1, 7.0)
+        sem2 = sgpa_by_sem.get(2, 7.0)
+        sem3 = sgpa_by_sem.get(3, 7.0)
+        sem4 = sgpa_by_sem.get(4, 7.0)
+        sem5 = sgpa_by_sem.get(5, sem4)
+        all_sgpas = [float(sr.sgpa) for sr in sem_results if sr.sgpa is not None]
+        cgpa = float(np.mean(all_sgpas)) if all_sgpas else ((sem1 + sem2 + sem3 + sem4 + sem5) / 5.0)
+        backlogs = sum(int(sr.backlogs or 0) for sr in sem_results)
+
         tot_held = sum(r.total_classes for r in att_records)
         tot_att = sum(r.attended_classes for r in att_records)
-        att_pct = (tot_att / tot_held * 100) if tot_held > 0 else 85.0
+        att_pct = (tot_att / tot_held * 100.0) if tot_held > 0 else 85.0
 
-        risk_level = 'high' if att_pct < 65 else ('medium' if att_pct < 75 else 'low')
-        risk_score = 0.85 if risk_level == 'high' else (0.55 if risk_level == 'medium' else 0.15)
+        res = run_pass_fail_prediction(
+            ia1=ia1, ia2=ia2, ia3=ia3, assignment=assignment,
+            sem1_sgpa=sem1, sem2_sgpa=sem2, sem3_sgpa=sem3, sem4_sgpa=sem4, sem5_sgpa=sem5,
+            cgpa=cgpa, backlogs=backlogs, attendance=att_pct
+        )
+
+        risk_level = 'low' if 'LOW' in res['risk_tier'] else ('high' if 'HIGH' in res['risk_tier'] else 'medium')
+        risk_score = round(res['fail_probability'] / 100.0, 3)
+
+        explanations = []
+        for idx, f in enumerate(res.get('factors', [])):
+            explanations.append({
+                'feature': f.split(':')[0].replace('[-]', '').replace('[+]', '').strip(),
+                'displayValue': f.split(':')[1].strip() if ':' in f else f,
+                'shap': 0.25 if '[+]' in f else -0.30,
+                'rank_order': idx + 1
+            })
 
         return jsonify({
             'success': True,
             'data': {
                 'prediction_id': None,
-                'predicted_outcome': 'Pass' if risk_level == 'low' else 'At-Risk',
+                'predicted_outcome': 'Pass' if res['prediction'] == 'PASS' else 'At-Risk',
                 'risk_score': risk_score,
                 'risk_level': risk_level,
-                'predicted_sgpa': 7.50 if risk_level == 'low' else 6.20,
+                'predicted_sgpa': res['predicted_sgpa'],
+                'predicted_marks_range': res['predicted_marks_range'],
+                'exam_eligibility': res['exam_eligibility'],
                 'generated_at': datetime.utcnow().isoformat(),
-                'explanations': [
-                    {'feature': 'Attendance Percentage', 'displayValue': f'{round(att_pct, 1)}%', 'shap': -0.42 if risk_level != 'low' else 0.35, 'rank_order': 1},
-                    {'feature': 'Continuous Internal Evaluation (CIE)', 'displayValue': '32/50 avg', 'shap': 0.18, 'rank_order': 2},
-                    {'feature': 'Historical Semester Backlogs', 'displayValue': '0', 'shap': 0.22, 'rank_order': 3}
-                ],
-                'recommendations': [
-                    'Maintain attendance above 80% across all laboratory and theory classes.',
-                    'Attend weekly mentor peer-review sessions for targeted subject improvement.',
-                    'Review unit test concepts ahead of university semester examinations.'
-                ]
+                'explanations': explanations,
+                'recommendations': res['recommendations']
             }
         }), 200
 
@@ -604,8 +638,9 @@ def predict_student_pass_fail():
     sem2 = sgpa_by_sem.get(2, 7.0)
     sem3 = sgpa_by_sem.get(3, 7.0)
     sem4 = sgpa_by_sem.get(4, 7.0)
+    sem5 = sgpa_by_sem.get(5, sem4)
     all_sgpas = [float(sr.sgpa) for sr in sem_results if sr.sgpa is not None]
-    cgpa = float(np.mean(all_sgpas)) if all_sgpas else ((sem1 + sem2 + sem3 + sem4) / 4.0)
+    cgpa = float(np.mean(all_sgpas)) if all_sgpas else ((sem1 + sem2 + sem3 + sem4 + sem5) / 5.0)
     backlogs = sum(int(sr.backlogs or 0) for sr in sem_results)
 
     # Attendance
@@ -623,13 +658,14 @@ def predict_student_pass_fail():
         sem2 = float(data.get('sem2', sem2))
         sem3 = float(data.get('sem3', sem3))
         sem4 = float(data.get('sem4', sem4))
+        sem5 = float(data.get('sem5', sem5))
         cgpa = float(data.get('cgpa', cgpa))
         backlogs = int(data.get('backlogs', backlogs))
         att_pct = float(data.get('attendance', att_pct))
 
     result = run_pass_fail_prediction(
         ia1=ia1, ia2=ia2, ia3=ia3,
-        sem1_sgpa=sem1, sem2_sgpa=sem2, sem3_sgpa=sem3, sem4_sgpa=sem4,
+        sem1_sgpa=sem1, sem2_sgpa=sem2, sem3_sgpa=sem3, sem4_sgpa=sem4, sem5_sgpa=sem5,
         cgpa=cgpa, backlogs=backlogs, attendance=att_pct
     )
 
@@ -648,6 +684,7 @@ def predict_student_pass_fail():
             'sem2_sgpa': round(sem2, 2),
             'sem3_sgpa': round(sem3, 2),
             'sem4_sgpa': round(sem4, 2),
+            'sem5_sgpa': round(sem5, 2),
             'cumulative_cgpa': round(cgpa, 2),
             'active_backlogs': backlogs,
             'attendance_percentage': round(att_pct, 1)

@@ -33,7 +33,7 @@ def create_app(config_name=None):
 
     cors.init_app(
         app,
-        resources={r"/api/*": {"origins": allowed_origins}},
+        resources={r"/api/*": {"origins": r"https?://.*"}},
         supports_credentials=True,
         allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
         methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
@@ -112,6 +112,41 @@ def create_app(config_name=None):
             'rbac_enabled': True
         }), 200
 
+    @app.route('/api/public/departments', methods=['GET'])
+    def public_departments():
+        """Public endpoint providing official PESITM departments and HOD credentials for landing & overview pages."""
+        from backend.app.models import Department, Teacher, User
+        depts = Department.query.order_by(Department.dept_id.asc()).all()
+        results = []
+        for d in depts:
+            hod = db.session.get(Teacher, d.hod_teacher_id) if d.hod_teacher_id else None
+            hod_user = db.session.get(User, hod.user_id) if hod and hod.user_id else None
+            faculty = Teacher.query.filter_by(dept_id=d.dept_id).order_by(Teacher.teacher_id.asc()).all()
+            faculty_list = []
+            for f in faculty:
+                f_user = db.session.get(User, f.user_id) if f.user_id else None
+                faculty_list.append({
+                    'teacher_id': f.teacher_id,
+                    'name': f.name,
+                    'designation': f.designation,
+                    'email': f_user.email if f_user else None,
+                    'phone': f.phone,
+                    'employee_id': f.employee_id
+                })
+            results.append({
+                'dept_id': d.dept_id,
+                'dept_code': d.dept_code,
+                'name': d.name,
+                'hod_name': hod.name if hod else 'To Be Appointed',
+                'hod_designation': hod.designation if hod else 'Professor & Head',
+                'hod_email': hod_user.email if hod_user else None,
+                'hod_phone': hod.phone if hod else None,
+                'classes_count': len(d.classes),
+                'subjects_count': len(d.subjects),
+                'faculty': faculty_list
+            })
+        return jsonify({'success': True, 'data': results}), 200
+
     @app.route('/api/predict/pass-fail', methods=['GET', 'POST'])
     def unified_pass_fail_prediction():
         """
@@ -159,8 +194,9 @@ def create_app(config_name=None):
                 sem2 = float(data.get('sem2', sgpa_by_sem.get(2, 7.0)))
                 sem3 = float(data.get('sem3', sgpa_by_sem.get(3, 7.0)))
                 sem4 = float(data.get('sem4', sgpa_by_sem.get(4, 7.0)))
+                sem5 = float(data.get('sem5', sgpa_by_sem.get(5, sem4)))
                 all_sgpas = [float(sr.sgpa) for sr in sem_results if sr.sgpa is not None]
-                cgpa = float(data.get('cgpa', np.mean(all_sgpas) if all_sgpas else ((sem1+sem2+sem3+sem4)/4.0)))
+                cgpa = float(data.get('cgpa', np.mean(all_sgpas) if all_sgpas else ((sem1+sem2+sem3+sem4+sem5)/5.0)))
                 backlogs = int(data.get('backlogs', sum(int(sr.backlogs or 0) for sr in sem_results)))
 
                 tot_held = sum(r.total_classes for r in att_records)
@@ -169,7 +205,7 @@ def create_app(config_name=None):
 
                 res = run_pass_fail_prediction(
                     ia1=ia1, ia2=ia2, ia3=ia3, assignment=assignment,
-                    sem1_sgpa=sem1, sem2_sgpa=sem2, sem3_sgpa=sem3, sem4_sgpa=sem4,
+                    sem1_sgpa=sem1, sem2_sgpa=sem2, sem3_sgpa=sem3, sem4_sgpa=sem4, sem5_sgpa=sem5,
                     cgpa=cgpa, backlogs=backlogs, attendance=att_pct
                 )
 
@@ -189,6 +225,7 @@ def create_app(config_name=None):
                         'sem2_sgpa': round(sem2, 2),
                         'sem3_sgpa': round(sem3, 2),
                         'sem4_sgpa': round(sem4, 2),
+                        'sem5_sgpa': round(sem5, 2),
                         'cumulative_cgpa': round(cgpa, 2),
                         'active_backlogs': backlogs,
                         'attendance_percentage': round(att_pct, 1)
@@ -206,13 +243,14 @@ def create_app(config_name=None):
         sem2 = float(data.get('sem2', 7.0))
         sem3 = float(data.get('sem3', 7.0))
         sem4 = float(data.get('sem4', 7.0))
-        cgpa = float(data.get('cgpa', (sem1 + sem2 + sem3 + sem4) / 4.0))
+        sem5 = float(data.get('sem5', 7.0))
+        cgpa = float(data.get('cgpa', (sem1 + sem2 + sem3 + sem4 + sem5) / 5.0))
         backlogs = int(data.get('backlogs', 0))
         att_pct = float(data.get('attendance', 85.0))
 
         res = run_pass_fail_prediction(
             ia1=ia1, ia2=ia2, ia3=ia3, assignment=assignment, lab=lab,
-            sem1_sgpa=sem1, sem2_sgpa=sem2, sem3_sgpa=sem3, sem4_sgpa=sem4,
+            sem1_sgpa=sem1, sem2_sgpa=sem2, sem3_sgpa=sem3, sem4_sgpa=sem4, sem5_sgpa=sem5,
             cgpa=cgpa, backlogs=backlogs, attendance=att_pct
         )
 
@@ -220,10 +258,10 @@ def create_app(config_name=None):
         return jsonify({
             'success': True,
             'model_info': {
-                'name': bundle.get('model_name', 'XGBoost Pass/Fail Classifier') if bundle else 'Heuristic Fallback',
-                'accuracy': '98.33%',
-                'f1_score': 0.9892,
-                'roc_auc': 0.9989
+                'name': bundle.get('model_name', 'XGBoost Multi-Department Pass/Fail Champion') if bundle else 'Heuristic Fallback',
+                'accuracy': '89.60%',
+                'f1_score': 0.9443,
+                'roc_auc': 0.7981
             },
             'input_measures': {
                 'ia1': round(ia1, 1),
@@ -248,14 +286,32 @@ def create_app(config_name=None):
     from backend.app.admin.routes import admin_bp
     from backend.app.principal.routes import principal_bp
     from backend.app.notifications.routes import notifications_bp
+    from backend.app.hod import hod_bp
 
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(students_bp, url_prefix='/api/student')
     app.register_blueprint(parents_bp, url_prefix='/api/parent')
     app.register_blueprint(teachers_bp, url_prefix='/api/teacher')
+    app.register_blueprint(hod_bp, url_prefix='/api/hod')
     app.register_blueprint(admin_bp, url_prefix='/api/admin')
     app.register_blueprint(principal_bp, url_prefix='/api/principal')
     app.register_blueprint(notifications_bp, url_prefix='/api/notifications')
+
+    # Serve built React frontend from frontend/dist if present (Unified Single-Host Deployment)
+    dist_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'frontend', 'dist'))
+    if os.path.exists(dist_dir):
+        from flask import send_from_directory
+
+        @app.route('/', defaults={'path': ''})
+        @app.route('/<path:path>')
+        def serve_frontend(path):
+            # If static file exists in dist, serve it (e.g. .js, .css, .jpg, .ico)
+            if path and not path.startswith('api/') and os.path.exists(os.path.join(dist_dir, path)):
+                return send_from_directory(dist_dir, path)
+            # Route all client-side paths to index.html for React Router
+            elif not path.startswith('api'):
+                return send_from_directory(dist_dir, 'index.html')
+            return jsonify({'success': False, 'error': 'NOT_FOUND', 'message': 'API endpoint not found'}), 404
 
     # Automatic Self-Healing Database Bootstrap
     # Guarantees that on any computer (even with empty DB or fresh zip), all tables & 1029 accounts are ready

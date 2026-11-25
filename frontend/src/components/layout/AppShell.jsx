@@ -12,6 +12,7 @@ import {
   BookOpen,
   User,
   LayoutDashboard,
+  Building2,
 } from 'lucide-react';
 import { ROUTES } from '@/utils/constants';
 import { useAuth } from '@/context/AuthContext';
@@ -44,14 +45,25 @@ const getRoleConfig = (role) => {
         ],
       };
     case 'teacher':
-    case 'hod':
       return {
-        label: role === 'hod' ? 'HoD Portal' : 'Faculty Portal',
-        badgeClass: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800',
-        avatarBg: 'bg-indigo-600',
+        label: 'Faculty Portal',
+        badgeClass: 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 border-blue-200 dark:border-blue-800',
+        avatarBg: 'bg-blue-600',
         homeRoute: '/teacher/dashboard',
         allowedRoutes: ['/teacher/dashboard'],
         navLinks: [
+          { to: '/teacher/dashboard', label: 'Assigned Classes & Marks Entry', icon: BookOpen },
+        ],
+      };
+    case 'hod':
+      return {
+        label: 'HoD Department Leadership',
+        badgeClass: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800',
+        avatarBg: 'bg-indigo-600',
+        homeRoute: '/hod/dashboard',
+        allowedRoutes: ['/hod/dashboard', '/teacher/dashboard'],
+        navLinks: [
+          { to: '/hod/dashboard', label: 'Department Analytics & Overview', icon: Building2 },
           { to: '/teacher/dashboard', label: 'Assigned Classes & Marks Entry', icon: BookOpen },
         ],
       };
@@ -152,7 +164,7 @@ export default function AppShell() {
             <span>PES Institute of Technology and Management, Shivamogga &bull; VTU Affiliated</span>
           </div>
           <div className="flex items-center gap-3 text-white/70">
-            <span>Centralized Academic Monitoring (CAMPS-ML)</span>
+            <span>Centralized Academic Monitoring and Prediction System (CAMPS-ML)</span>
             <span>&bull;</span>
             <span className="font-mono text-[10px] text-accent-hover">XGBoost + TreeSHAP Active</span>
           </div>

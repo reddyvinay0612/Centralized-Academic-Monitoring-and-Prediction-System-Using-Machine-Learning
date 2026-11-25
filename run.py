@@ -51,6 +51,6 @@ if __name__ == "__main__":
         print(f" [*] Running on:        http://localhost:{port}")
         print(f" [*] Health Check URL:  http://localhost:{port}/api/health")
         print(f" [*] System Info URL:   http://localhost:{port}/api/system/info")
-        print(f" [*] Portals Enabled:   Student, Parent, Teacher, Admin, Principal")
+        print(f" [*] Portals Enabled:   Student, Parent, Teacher, HOD, Admin, Principal")
         print("=" * 70)
-        app.run(host="0.0.0.0", port=port, debug=True, use_reloader=False)
+        app.run(host="0.0.0.0", port=port, debug=False, use_reloader=False)

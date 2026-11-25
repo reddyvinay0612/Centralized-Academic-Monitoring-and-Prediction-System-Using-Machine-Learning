@@ -25,15 +25,26 @@ export const INITIAL_MODEL_INFO = {
 };
 
 export const INITIAL_USERS = [
-  { id: 0, name: 'Dr. Chaitanya Kumar', username: 'principal', email: 'principal@pesitm.edu', role: 'principal', active: true, department: 'Principal Directorate' },
+  { id: 0, name: 'Dr. Swamy D R', username: 'principal', email: 'principal@pestrust.edu.in', role: 'principal', active: true, department: 'Principal Directorate' },
   { id: 1, name: 'Dr. C. G. Halesh', username: 'admin', email: 'admin@pesitm.edu', role: 'admin', active: true, department: 'CSE' },
-  { id: 2, name: 'Prof. Anita Rao', username: 'anita.rao', email: 'anita.rao@pesitm.edu', role: 'teacher', active: true, department: 'CSE' },
+  { id: 2, name: 'Dr. Prasanna Kumar H R', username: 'hod.cse', email: 'hodcse@pestrust.edu.in', role: 'hod', active: true, department: 'CSE', employeeId: 'PES-HOD-CSE-01' },
+  { id: 16, name: 'Dr. Mouneshachari S', username: 'hod.ise', email: 'hodise@pestrust.edu.in', role: 'hod', active: true, department: 'ISE', employeeId: 'PES-HOD-ISE-01' },
+  { id: 17, name: 'Dr. Vishnu V M', username: 'hod.ece', email: 'hodece@pestrust.edu.in', role: 'hod', active: true, department: 'ECE', employeeId: 'PES-HOD-ECE-01' },
+  { id: 18, name: 'Dr. Pramod', username: 'hod.csd', email: 'hodcsd@pestrust.edu.in', role: 'hod', active: true, department: 'CSD', employeeId: 'PES-HOD-CSD-01' },
+  { id: 19, name: 'Dr. Girisha L', username: 'hod.me', email: 'hodme@pestrust.edu.in', role: 'hod', active: true, department: 'ME', employeeId: 'PES-HOD-ME-01' },
   { id: 3, name: 'Prof. Karthik Nair', username: 'karthik.nair', email: 'karthik.nair@pesitm.edu', role: 'teacher', active: true, department: 'CSE' },
   { id: 4, name: 'Dr. Sunil Kumar', username: 'sunil.kumar', email: 'sunil.kumar@pesitm.edu', role: 'teacher', active: true, department: 'CSE' },
   { id: 5, name: 'Poorvi V S', username: 'poorvi', email: 'poorvi@pesitm.edu', role: 'student', active: true, usn: '4PM21CS000' },
   { id: 6, name: 'Rohan Verma', username: 'rohan', email: 'rohan@pesitm.edu', role: 'student', active: true, usn: '4PM21CS001' },
   { id: 7, name: 'Smt. Shailaja V (Parent of Poorvi)', username: 'parent.poorvi', email: 'parent.poorvi@gmail.com', role: 'parent', active: true, studentUsn: '4PM21CS000' },
   { id: 8, name: 'Sri. Suresh Verma (Parent of Rohan)', username: 'parent.rohan', email: 'parent.rohan@gmail.com', role: 'parent', active: true, studentUsn: '4PM21CS001' },
+  { id: 9, name: 'PAVAN KUMAR', username: '4PM23CS071', email: '4pm23cs071@pesitm.edu', role: 'student', active: true, usn: '4PM23CS071', department: 'CSE' },
+  { id: 10, name: 'GOWTHAM K', username: '4PM23CS035', email: '4pm23cs035@pesitm.edu', role: 'student', active: true, usn: '4PM23CS035', department: 'CSE' },
+  { id: 11, name: 'AFROZ M', username: '4PM23ME001', email: '4pm23me001@pesitm.edu', role: 'student', active: true, usn: '4PM23ME001', department: 'ME' },
+  { id: 12, name: 'ALIYA FARHEEN', username: '4PM23IS001', email: '4pm23is001@pesitm.edu', role: 'student', active: true, usn: '4PM23IS001', department: 'ISE' },
+  { id: 13, name: 'ABID HUSSAIN S', username: '4PM23EC001', email: '4pm23ec001@pesitm.edu', role: 'student', active: true, usn: '4PM23EC001', department: 'ECE' },
+  { id: 14, name: 'Parent of PAVAN KUMAR', username: 'parent_4pm23cs071', email: 'parent_4pm23cs071@gmail.com', role: 'parent', active: true, studentUsn: '4PM23CS071' },
+  { id: 15, name: 'VINAYPRAKASH', username: '4PM23CG058', email: '4pm23cg058@pesitm.edu', role: 'student', active: true, usn: '4PM23CG058', department: 'CSD' },
 ];
 
 export const CLASSES = [
@@ -42,10 +53,10 @@ export const CLASSES = [
 ];
 
 export const SUBJECTS = [
-  { id: 1, code: '21CS51', name: 'Machine Learning & Applications', credits: 4, teacher: 'Prof. Anita Rao' },
+  { id: 1, code: '21CS51', name: 'Machine Learning & Applications', credits: 4, teacher: 'Dr. Prasanna Kumar H R' },
   { id: 2, code: '21CS52', name: 'Database Management Systems', credits: 4, teacher: 'Prof. Karthik Nair' },
   { id: 3, code: '21CS53', name: 'Computer Networks & Cloud', credits: 3, teacher: 'Dr. Sunil Kumar' },
-  { id: 4, code: '21CS54', name: 'Theory of Computation', credits: 3, teacher: 'Prof. Anita Rao' },
+  { id: 4, code: '21CS54', name: 'Theory of Computation', credits: 3, teacher: 'Dr. Prasanna Kumar H R' },
   { id: 5, code: '21CSL55', name: 'DBMS & Machine Learning Lab', credits: 2, teacher: 'Prof. Karthik Nair' },
 ];
 
@@ -67,7 +78,7 @@ function createStudentsList() {
       riskScore: 0.08,
       riskLevel: 'low',
       mentorId: 2,
-      mentorName: 'Prof. Anita Rao',
+      mentorName: 'Dr. Prasanna Kumar H R',
       parentName: 'Smt. Shailaja V',
       phone: '+91 98800 11223',
       subjectAttendance: [
@@ -104,7 +115,7 @@ function createStudentsList() {
       riskScore: 0.88,
       riskLevel: 'high',
       mentorId: 2,
-      mentorName: 'Prof. Anita Rao',
+      mentorName: 'Dr. Prasanna Kumar H R',
       parentName: 'Sri. Suresh Verma',
       phone: '+91 98450 12345',
       subjectAttendance: [
@@ -176,7 +187,7 @@ function createStudentsList() {
       riskScore: 0.48,
       riskLevel: 'medium',
       mentorId: 2,
-      mentorName: 'Prof. Anita Rao',
+      mentorName: 'Dr. Prasanna Kumar H R',
       parentName: 'Sri. Manoj Kumar',
       phone: '+91 98450 55667',
       subjectAttendance: [
@@ -211,7 +222,7 @@ function createStudentsList() {
       riskScore: 0.12,
       riskLevel: 'low',
       mentorId: 2,
-      mentorName: 'Prof. Anita Rao',
+      mentorName: 'Dr. Prasanna Kumar H R',
       parentName: 'Sri. Ganesh Bhat',
       phone: '+91 98450 77889',
       subjectAttendance: [
@@ -297,7 +308,7 @@ function createStudentsList() {
       riskScore: Math.min(riskScore, 0.96),
       riskLevel,
       mentorId: (i % 3) + 2,
-      mentorName: i % 3 === 0 ? 'Prof. Anita Rao' : (i % 3 === 1 ? 'Prof. Karthik Nair' : 'Dr. Sunil Kumar'),
+      mentorName: i % 3 === 0 ? 'Dr. Prasanna Kumar H R' : (i % 3 === 1 ? 'Prof. Karthik Nair' : 'Dr. Sunil Kumar'),
       parentName: `Parent of ${fn}`,
       phone: `+91 98450 ${10000 + i}`,
       subjectAttendance: [
@@ -366,7 +377,7 @@ export const INITIAL_REMARKS = [
   {
     id: 1,
     studentId: 2,
-    authorName: 'Prof. Anita Rao',
+    authorName: 'Dr. Prasanna Kumar H R',
     text: 'Met student regarding attendance shortage. Rohan cited commuter delays and health recovery. Scheduled 2 Saturday remedial lab sessions.',
     createdAt: '2024-10-28T11:20:00Z',
   },

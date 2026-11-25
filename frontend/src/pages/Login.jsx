@@ -144,60 +144,6 @@ export default function Login() {
             <ArrowRight className="h-4 w-4" />
           </Button>
         </form>
-
-        {/* 1-Click Quick Login Demo Section */}
-        <div className="mt-6 border-t border-line/60 pt-5 dark:border-dark-line/60">
-          <div className="flex items-center gap-1.5 text-caption font-semibold text-muted dark:text-dark-muted">
-            <Sparkles className="h-3.5 w-3.5 text-accent" />
-            <span>Viva & Demo Quick Switch (1-Click Login):</span>
-          </div>
-
-          <div className="mt-3 grid grid-cols-2 gap-2">
-            <button
-              onClick={() => handleQuickLogin(INITIAL_USERS[0])}
-              className="flex items-center gap-2 rounded-input border border-line bg-page/50 p-2 text-left text-caption transition hover:border-accent hover:bg-surface dark:border-dark-line dark:bg-dark-page"
-            >
-              <ShieldCheck className="h-4 w-4 text-purple-600 flex-shrink-0" />
-              <div>
-                <p className="font-semibold text-ink dark:text-dark-text leading-tight">Admin</p>
-                <p className="text-[10px] text-muted">Dr. Halesh</p>
-              </div>
-            </button>
-
-            <button
-              onClick={() => handleQuickLogin(INITIAL_USERS[1])}
-              className="flex items-center gap-2 rounded-input border border-line bg-page/50 p-2 text-left text-caption transition hover:border-accent hover:bg-surface dark:border-dark-line dark:bg-dark-page"
-            >
-              <Users className="h-4 w-4 text-blue-600 flex-shrink-0" />
-              <div>
-                <p className="font-semibold text-ink dark:text-dark-text leading-tight">Teacher</p>
-                <p className="text-[10px] text-muted">Prof. Anita Rao</p>
-              </div>
-            </button>
-
-            <button
-              onClick={() => handleQuickLogin(INITIAL_USERS[4])}
-              className="flex items-center gap-2 rounded-input border border-line bg-page/50 p-2 text-left text-caption transition hover:border-accent hover:bg-surface dark:border-dark-line dark:bg-dark-page"
-            >
-              <GraduationCap className="h-4 w-4 text-emerald-600 flex-shrink-0" />
-              <div>
-                <p className="font-semibold text-ink dark:text-dark-text leading-tight">Student</p>
-                <p className="text-[10px] text-muted">Poorvi V S</p>
-              </div>
-            </button>
-
-            <button
-              onClick={() => handleQuickLogin(INITIAL_USERS[6])}
-              className="flex items-center gap-2 rounded-input border border-line bg-page/50 p-2 text-left text-caption transition hover:border-accent hover:bg-surface dark:border-dark-line dark:bg-dark-page"
-            >
-              <User className="h-4 w-4 text-amber-600 flex-shrink-0" />
-              <div>
-                <p className="font-semibold text-ink dark:text-dark-text leading-tight">Parent</p>
-                <p className="text-[10px] text-muted">Smt. Shailaja V</p>
-              </div>
-            </button>
-          </div>
-        </div>
       </div>
 
       {/* Footer */}

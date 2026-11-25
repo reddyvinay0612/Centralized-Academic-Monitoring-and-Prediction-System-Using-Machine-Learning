@@ -30,8 +30,9 @@ export default {
         },
       },
       fontFamily: {
-        heading: ['"Bricolage Grotesque"', 'sans-serif'],
-        body: ['"Instrument Sans"', 'sans-serif'],
+        heading: ['"Plus Jakarta Sans"', '"Bricolage Grotesque"', 'system-ui', 'sans-serif'],
+        display: ['"Plus Jakarta Sans"', '"Bricolage Grotesque"', 'sans-serif'],
+        body: ['"Instrument Sans"', '"Plus Jakarta Sans"', 'sans-serif'],
       },
       fontSize: {
         'display': ['28px', { lineHeight: '1.25', fontWeight: '700' }],

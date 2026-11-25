@@ -155,11 +155,14 @@ def get_department_comparative_matrix():
         med_risk = sum(1 for p in preds if p.risk_level == 'medium')
         low_risk = sum(1 for p in preds if p.risk_level == 'low')
 
+        hod_user = db.session.get(User, hod.user_id) if hod and hod.user_id else None
         matrix.append({
             'dept_id': d.dept_id,
             'dept_code': d.dept_code,
             'name': d.name,
             'hod_name': hod.name if hod else 'To Be Appointed',
+            'hod_email': hod_user.email if hod_user else None,
+            'hod_phone': hod.phone if hod else None,
             'headcount': {
                 'students': student_count,
                 'faculty': faculty_count,

@@ -57,7 +57,7 @@ export default function StudentProfile() {
       const addedRemark = {
         id: Date.now(),
         studentId: student.id,
-        authorName: currentUser?.name || 'Prof. Anita Rao',
+        authorName: currentUser?.name || 'Dr. Prasanna Kumar H R',
         text: newRemarkText.trim(),
         createdAt: new Date().toISOString(),
       };
@@ -135,7 +135,7 @@ export default function StudentProfile() {
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 rounded-input border border-line bg-page/40 p-3 text-caption dark:border-dark-line dark:bg-dark-surface/40">
           <div>
             <span className="text-muted dark:text-dark-muted">Assigned Mentor:</span>
-            <p className="font-semibold text-ink dark:text-dark-text">{student.mentorName || 'Prof. Anita Rao'}</p>
+            <p className="font-semibold text-ink dark:text-dark-text">{student.mentorName || 'Dr. Prasanna Kumar H R'}</p>
           </div>
           <div>
             <span className="text-muted dark:text-dark-muted">Parent / Guardian:</span>

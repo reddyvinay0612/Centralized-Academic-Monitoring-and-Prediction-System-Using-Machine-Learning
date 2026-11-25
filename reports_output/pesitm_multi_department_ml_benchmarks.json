@@ -1,0 +1,138 @@
+{
+  "total_samples": 644,
+  "total_departments": 9,
+  "departments": [
+    "ME",
+    "ISE",
+    "EEE",
+    "ECE",
+    "CV",
+    "CSD",
+    "CE",
+    "AIML",
+    "CSE"
+  ],
+  "module_1_pass_fail": {
+    "champion": "XGBoost",
+    "benchmarks": {
+      "Logistic Regression": {
+        "accuracy": 80.59,
+        "precision": 95.61,
+        "recall": 82.05,
+        "f1_score": 88.26,
+        "roc_auc": 0.8288
+      },
+      "Decision Tree": {
+        "accuracy": 78.71,
+        "precision": 94.06,
+        "recall": 81.34,
+        "f1_score": 87.01,
+        "roc_auc": 0.7239
+      },
+      "Random Forest": {
+        "accuracy": 86.8,
+        "precision": 94.28,
+        "recall": 90.76,
+        "f1_score": 92.45,
+        "roc_auc": 0.8188
+      },
+      "Extra Trees": {
+        "accuracy": 85.25,
+        "precision": 94.96,
+        "recall": 88.15,
+        "f1_score": 91.41,
+        "roc_auc": 0.8381
+      },
+      "Gradient Boosting": {
+        "accuracy": 88.82,
+        "precision": 91.87,
+        "recall": 95.99,
+        "f1_score": 93.87,
+        "roc_auc": 0.8169
+      },
+      "XGBoost": {
+        "accuracy": 89.6,
+        "precision": 90.47,
+        "recall": 98.78,
+        "f1_score": 94.43,
+        "roc_auc": 0.7981
+      }
+    }
+  },
+  "module_2_risk_level": {
+    "champion": "XGBoost",
+    "benchmarks": {
+      "Random Forest": {
+        "accuracy": 73.29,
+        "macro_f1": 58.0,
+        "weighted_f1": 75.09
+      },
+      "Extra Trees": {
+        "accuracy": 73.91,
+        "macro_f1": 60.17,
+        "weighted_f1": 75.86
+      },
+      "Gradient Boosting": {
+        "accuracy": 78.1,
+        "macro_f1": 57.12,
+        "weighted_f1": 76.71
+      },
+      "XGBoost": {
+        "accuracy": 79.19,
+        "macro_f1": 59.57,
+        "weighted_f1": 77.88
+      }
+    }
+  },
+  "module_3_sgpa_regressor": {
+    "champion": "Lasso Regressor",
+    "benchmarks": {
+      "Ridge Regressor": {
+        "r2_score": 0.7237,
+        "mae": 0.4124,
+        "rmse": 0.5472
+      },
+      "Lasso Regressor": {
+        "r2_score": 0.728,
+        "mae": 0.4105,
+        "rmse": 0.5425
+      },
+      "Random Forest": {
+        "r2_score": 0.6995,
+        "mae": 0.4315,
+        "rmse": 0.5697
+      },
+      "Gradient Boosting": {
+        "r2_score": 0.6889,
+        "mae": 0.4402,
+        "rmse": 0.5804
+      },
+      "XGBoost Regressor": {
+        "r2_score": 0.6771,
+        "mae": 0.4494,
+        "rmse": 0.5904
+      }
+    }
+  },
+  "module_4_marks_range": {
+    "champion": "Extra Trees",
+    "benchmarks": {
+      "Random Forest": {
+        "accuracy": 65.38,
+        "weighted_f1": 64.06
+      },
+      "Extra Trees": {
+        "accuracy": 65.84,
+        "weighted_f1": 64.12
+      },
+      "Gradient Boosting": {
+        "accuracy": 62.74,
+        "weighted_f1": 62.12
+      },
+      "XGBoost": {
+        "accuracy": 60.41,
+        "weighted_f1": 59.26
+      }
+    }
+  }
+}

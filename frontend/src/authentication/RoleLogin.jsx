@@ -17,6 +17,7 @@ import {
   Sparkles,
   School,
   CheckCircle2,
+  Building2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -34,7 +35,6 @@ const ROLE_CONFIGS = {
     iconBg: 'bg-emerald-500/10 text-emerald-600',
     identifierLabel: 'University Seat Number (USN)',
     identifierPlaceholder: 'e.g. 4PM23CS071 or 4PM22CS001',
-    demoCredential: { identifier: '4PM23CS071', password: 'password123', label: 'PAVAN KUMAR (4PM23CS071)' },
     redirectDefault: '/student/dashboard',
   },
   parent: {
@@ -47,7 +47,6 @@ const ROLE_CONFIGS = {
     iconBg: 'bg-amber-500/10 text-amber-600',
     identifierLabel: 'Registered USN or Parent Username',
     identifierPlaceholder: 'e.g. parent_4pm23cs071 or 4PM23CS071',
-    demoCredential: { identifier: 'parent_4pm23cs071', password: 'password123', label: 'Parent of PAVAN KUMAR (4PM23CS071)' },
     redirectDefault: '/parent/dashboard',
   },
   teacher: {
@@ -59,9 +58,20 @@ const ROLE_CONFIGS = {
     badgeClass: 'bg-blue-100 text-blue-800 dark:bg-blue-950/40 dark:text-blue-300',
     iconBg: 'bg-blue-500/10 text-blue-600',
     identifierLabel: 'Employee ID or Institutional Email',
-    identifierPlaceholder: 'e.g. EMP-CSE-01 or anita.rao@pesitm.edu',
-    demoCredential: { identifier: 'EMP-CSE-01', password: 'password123', label: 'Prof. Anita Rao (CSE)' },
+    identifierPlaceholder: 'e.g. EMP-CSE-01 or karthik.nair@pesitm.edu',
     redirectDefault: '/teacher/dashboard',
+  },
+  hod: {
+    role: 'hod',
+    title: 'HOD & Department Leadership Portal',
+    subtitle: 'Sign in to oversee departmental curriculum, faculty workloads, student trajectories, and CIE approvals.',
+    icon: Building2,
+    badgeText: 'HOD Access',
+    badgeClass: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950/40 dark:text-indigo-300',
+    iconBg: 'bg-indigo-500/10 text-indigo-600',
+    identifierLabel: 'HOD Username, Email, or Employee ID',
+    identifierPlaceholder: 'e.g. hod.cse, PES-HOD-CSE-01, or hodcse@pestrust.edu.in',
+    redirectDefault: '/hod/dashboard',
   },
   admin: {
     role: 'admin',
@@ -73,7 +83,6 @@ const ROLE_CONFIGS = {
     iconBg: 'bg-purple-500/10 text-purple-600',
     identifierLabel: 'Administrator Email / Username',
     identifierPlaceholder: 'e.g. admin@pesitm.edu',
-    demoCredential: { identifier: 'admin@pesitm.edu', password: 'password123', label: 'Dr. C. G. Halesh (Admin)' },
     redirectDefault: '/admin/dashboard',
   },
   principal: {
@@ -85,8 +94,7 @@ const ROLE_CONFIGS = {
     badgeClass: 'bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300',
     iconBg: 'bg-rose-500/10 text-rose-600',
     identifierLabel: 'Executive Email / Username',
-    identifierPlaceholder: 'e.g. principal@pesitm.edu',
-    demoCredential: { identifier: 'principal@pesitm.edu', password: 'password123', label: 'Dr. R. S. Hiremath (Principal)' },
+    identifierPlaceholder: 'e.g. principal@pestrust.edu.in',
     redirectDefault: '/principal/dashboard',
   },
 };
@@ -103,14 +111,6 @@ export default function RoleLogin({ role = 'student' }) {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [isForgotModalOpen, setIsForgotModalOpen] = useState(false);
-
-  // Fill sample demo credentials for examiners/graders
-  const handleQuickFill = () => {
-    setIdentifier(config.demoCredential.identifier);
-    setPassword(config.demoCredential.password);
-    setErrorMessage('');
-    toast.success(`Populated sample credentials for ${config.demoCredential.label}`);
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -243,34 +243,18 @@ export default function RoleLogin({ role = 'student' }) {
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
-              <p className="mt-1.5 text-[11px] text-muted dark:text-dark-muted flex items-center justify-between">
-                <span>Default password for all accounts:</span>
-                <span className="font-mono font-semibold text-accent bg-accent/10 px-1.5 py-0.5 rounded">password123</span>
-              </p>
             </div>
 
             <Button
               type="submit"
               variant="primary"
-              className="w-full mt-2"
+              className="w-full mt-4"
               isLoading={isLoading}
             >
               <span>Sign In to {config.badgeText}</span>
               <ArrowRight className="h-4 w-4" />
             </Button>
           </form>
-
-          {/* Quick 1-Click Demo Fill for Viva Examiner */}
-          <div className="mt-6 border-t border-line/60 pt-4 dark:border-dark-line/60">
-            <button
-              type="button"
-              onClick={handleQuickFill}
-              className="flex w-full items-center justify-center gap-2 rounded-input border border-dashed border-accent/40 bg-accent/5 p-2 text-caption font-medium text-accent hover:bg-accent/10 transition"
-            >
-              <Sparkles className="h-3.5 w-3.5" />
-              <span>Fill Demo Credentials ({config.demoCredential.label})</span>
-            </button>
-          </div>
         </div>
 
         {/* Back Link */}

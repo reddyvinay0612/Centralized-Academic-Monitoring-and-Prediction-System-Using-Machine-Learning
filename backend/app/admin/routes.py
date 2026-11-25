@@ -345,11 +345,13 @@ def get_departments():
     results = []
     for d in depts:
         hod = db.session.get(Teacher, d.hod_teacher_id) if d.hod_teacher_id else None
+        hod_user = db.session.get(User, hod.user_id) if hod and hod.user_id else None
         results.append({
             'dept_id': d.dept_id,
             'dept_code': d.dept_code,
             'name': d.name,
             'hod_name': hod.name if hod else 'To Be Assigned',
+            'hod_email': hod_user.email if hod_user else None,
             'classes_count': len(d.classes),
             'subjects_count': len(d.subjects)
         })

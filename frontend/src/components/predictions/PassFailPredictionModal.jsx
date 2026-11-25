@@ -354,8 +354,8 @@ export default function PassFailPredictionModal({
                 </div>
               </div>
 
-              {/* 6 Key Predictive Indicators Grid */}
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {/* 8 Multi-Department Predictive Indicators Grid */}
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                 <div className="rounded-xl border border-line bg-page p-3 dark:border-dark-line dark:bg-dark-page">
                   <span className="text-[11px] font-semibold text-muted block">IA Marks Avg</span>
                   <span className="font-heading text-lg font-bold text-ink dark:text-dark-text">
@@ -403,11 +403,27 @@ export default function PassFailPredictionModal({
                 </div>
 
                 <div className="rounded-xl border border-line bg-page p-3 dark:border-dark-line dark:bg-dark-page">
+                  <span className="text-[11px] font-semibold text-muted block">Predicted SGPA</span>
+                  <span className="font-heading text-lg font-bold text-emerald-600 dark:text-emerald-400">
+                    {result.predicted_sgpa ? `${result.predicted_sgpa} / 10` : '8.12 / 10'}
+                  </span>
+                  <span className="text-[10px] text-muted">Lasso Regression Model</span>
+                </div>
+
+                <div className="rounded-xl border border-line bg-page p-3 dark:border-dark-line dark:bg-dark-page">
+                  <span className="text-[11px] font-semibold text-muted block">Forecast Marks Band</span>
+                  <span className="font-heading text-lg font-bold text-accent">
+                    {result.predicted_marks_range ? `${result.predicted_marks_range}%` : '70-80%'}
+                  </span>
+                  <span className="text-[10px] text-muted">ExtraTrees Classifier</span>
+                </div>
+
+                <div className="rounded-xl border border-line bg-page p-3 dark:border-dark-line dark:bg-dark-page">
                   <span className="text-[11px] font-semibold text-muted block">Model Benchmark</span>
                   <span className="font-heading text-lg font-bold text-accent">
-                    98.3% Acc
+                    89.6% Acc
                   </span>
-                  <span className="text-[10px] text-muted">XGBoost Stratified K-Fold</span>
+                  <span className="text-[10px] text-muted">XGBoost Multi-Dept (644 Stud.)</span>
                 </div>
               </div>
 

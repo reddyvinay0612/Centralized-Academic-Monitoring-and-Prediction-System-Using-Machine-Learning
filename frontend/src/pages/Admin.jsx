@@ -481,7 +481,7 @@ export default function Admin() {
                 </div>
                 <div className="text-right">
                   <span className="rounded-pill bg-accent/10 px-2.5 py-1 text-caption font-semibold text-accent">
-                    {cls.section === 'A' ? 'Mentor: Prof. Anita Rao' : 'Mentor: Prof. Karthik Nair'}
+                    {cls.section === 'A' ? 'Mentor: Dr. Prasanna Kumar H R' : 'Mentor: Prof. Karthik Nair'}
                   </span>
                 </div>
               </div>
@@ -541,7 +541,7 @@ export default function Admin() {
               <div>
                 <p className="font-semibold text-ink dark:text-dark-text">Mentor Remark Logged</p>
                 <p className="text-muted dark:text-dark-muted">
-                  Prof. Anita Rao added intervention notes and scheduled Saturday tutorial.
+                  Dr. Prasanna Kumar H R added intervention notes and scheduled Saturday tutorial.
                 </p>
                 <p className="text-[10px] text-muted">28 Oct 2024 at 11:20 AM &bull; Web App</p>
               </div>
